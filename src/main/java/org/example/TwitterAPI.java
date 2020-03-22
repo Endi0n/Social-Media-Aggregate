@@ -3,12 +3,9 @@ import com.github.scribejava.apis.TwitterApi;
 import com.github.scribejava.core.model.OAuth1AccessToken;
 import com.github.scribejava.core.model.OAuth1RequestToken;
 import com.github.scribejava.core.model.OAuthRequest;
-import com.github.scribejava.core.model.Response;
 import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth10aService;
 
-import java.io.IOException;
-import java.util.concurrent.ExecutionException;
 
 public class TwitterAPI {
     private static final String API_KEY = System.getenv("TWITTER_API_KEY");
@@ -21,7 +18,11 @@ public class TwitterAPI {
     private OAuth1AccessToken accessToken;
 
     static OAuth1RequestToken generateAuthToken() throws APIException {
-        return service.getRequestToken();
+        try {
+            return service.getRequestToken();
+        } catch (Exception e) {
+            throw new APIException(e.getMessage(), e);
+        }
     }
 
     static String generateAuthUrl(OAuth1RequestToken requestToken) {
@@ -37,11 +38,11 @@ public class TwitterAPI {
     }
 
     public String getProfile() throws APIException {
-        final OAuthRequest request = new OAuthRequest(Verb.GET,
+        final var request = new OAuthRequest(Verb.GET,
                 "https://api.twitter.com/1.1/account/verify_credentials.json");
         service.signRequest(accessToken, request);
         try {
-            Response response = service.execute(request);
+            var response = service.execute(request);
             return response.getBody();
         } catch (Exception e) {
             throw new APIException(e.getMessage(), e);
