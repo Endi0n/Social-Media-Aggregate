@@ -7,7 +7,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     username = db.Column(db.String(50), unique=True, nullable=False, index=True)
-    password = db.Column(db.String(50), nullable=False)
+    password = db.Column(db.String(100), nullable=False)
 
     linkedin_token = db.relationship('linkedin_token', backref='user_id', lazy=True)
     tumblr_token = db.relationship('tumblr_token', backref='user_id', lazy=True)
@@ -20,7 +20,7 @@ class LinkedInToken(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
-    token = db.Column(db.String(1000))
+    token = db.Column(db.String(1000), nullable=False)
     updated_at = db.Column(db.DateTime)
     expires_at = db.Column(db.DateTime)
 
@@ -31,7 +31,8 @@ class TumblrToken(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
-    token = db.Column(db.String(1000))
+    token = db.Column(db.String(1000), nullable=False)
+    token_secret = db.Column(db.String(1000), nullable=False)
     updated_at = db.Column(db.DateTime)
     expires_at = db.Column(db.DateTime)
 
@@ -42,10 +43,9 @@ class TwitterToken(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
-    token = db.Column(db.String(1000))
-    token_secret = db.Column(db.String(1000))
+    token = db.Column(db.String(1000), nullable=False)
+    token_secret = db.Column(db.String(1000), nullable=False)
     updated_at = db.Column(db.DateTime)
-    expires_at = db.Column(db.DateTime)
 
 
 class AppKey(db.Model):
