@@ -4,6 +4,7 @@ import os
 
 app = Flask(__name__)
 
+app.config['BASE_DOMAIN'] = os.getenv('BASE_DOMAIN')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 

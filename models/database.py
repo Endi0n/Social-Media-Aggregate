@@ -9,9 +9,9 @@ class User(db.Model):
     username = db.Column(db.String(50), unique=True, nullable=False, index=True)
     password = db.Column(db.String(100), nullable=False)
 
-    linkedin_token = db.relationship('linkedin_token', backref='user_id', lazy=True)
-    tumblr_token = db.relationship('tumblr_token', backref='user_id', lazy=True)
-    twitter_token = db.relationship('twitter_token', backref='user_id', lazy=True)
+    linkedin_token = db.relationship('LinkedInToken', backref='user', lazy=True, uselist=False)
+    tumblr_token = db.relationship('TumblrToken', backref='user', lazy=True, uselist=False)
+    twitter_token = db.relationship('TwitterToken', backref='user', lazy=True, uselist=False)
 
 
 class LinkedInToken(db.Model):
@@ -23,6 +23,11 @@ class LinkedInToken(db.Model):
     token = db.Column(db.String(1000), nullable=False)
     updated_at = db.Column(db.DateTime)
     expires_at = db.Column(db.DateTime)
+
+    def __init__(self, user, token, expires_at):
+        self.user_id = user.id
+        self.token = token
+        self.expires_at = expires_at
 
 
 class TumblrToken(db.Model):
@@ -52,6 +57,6 @@ class AppKey(db.Model):
     __tablename__ = 'app_key'
 
     id = db.Column(db.Integer, nullable=False, primary_key=True)
-    platform_id = db.Column(db.String(10), nullable=False, unique=True)
+    platform = db.Column(db.String(10), nullable=False, unique=True)
     client_key = db.Column(db.String(50), nullable=False)
     client_secret = db.Column(db.String(50), nullable=False)
