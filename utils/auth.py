@@ -26,3 +26,17 @@ def linkedin_required(func):
         return func(linkedin_client, *args, **kwargs)
 
     return decorator
+
+
+def twitter_required(func):
+    user = User.query.get(1)  # Temporary workaround
+
+    @wraps(func)
+    def decorator(*args, **kwargs):
+        if not user.twitter_token:
+            return jsonify({'error': 'Unauthenticated for Twitter.'}), 401
+
+        twitter_client = TwitterAPI(user.twitter_token.token, user.twitter_token.token_secret)
+        return func(twitter_client, *args, **kwargs)
+
+    return decorator

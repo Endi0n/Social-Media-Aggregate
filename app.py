@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 import os
 
 app = Flask(__name__)
+app.secret_key = os.getenv('FLASK_SECRET_KEY')
 
 app.config['BASE_DOMAIN'] = os.getenv('BASE_DOMAIN')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')

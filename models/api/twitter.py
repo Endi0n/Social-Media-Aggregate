@@ -1,10 +1,12 @@
 from requests_oauthlib import OAuth1Session
-from os import getenv
+from models.database import AppKey
+import json
 
 
 class TwitterAPI:
-    CLIENT_KEY = getenv('TWITTER_API_KEY')
-    CLIENT_SECRET = getenv('TWITTER_API_SECRET')
+    APP_KEY = AppKey.query.filter_by(platform='TWITTER').one()
+    CLIENT_KEY = APP_KEY.client_key
+    CLIENT_SECRET = APP_KEY.client_secret
 
     @staticmethod
     def generate_auth_req_token():
@@ -40,4 +42,4 @@ class TwitterAPI:
                               self.__oauth_token,
                               self.__oauth_token_secret)
         response = oauth.get('https://api.twitter.com/1.1/account/verify_credentials.json')
-        return response.content.decode()
+        return json.loads(response.content.decode())
