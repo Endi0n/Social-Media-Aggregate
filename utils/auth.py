@@ -5,20 +5,20 @@ from models.api import *
 
 
 def login_required(func):
-    user = User.query.get(1)  # Temporary workaround
-
     @wraps(func)
     def decorator(*args, **kwargs):
+        user = User.query.get(1)  # Temporary workaround
+
         return func(user, *args, **kwargs)
 
     return decorator
 
 
 def linkedin_required(func):
-    user = User.query.get(1)  # Temporary workaround
-
     @wraps(func)
     def decorator(*args, **kwargs):
+        user = User.query.get(1)  # Temporary workaround
+
         if not user.linkedin_token:
             return jsonify({'error': 'Unauthenticated for LinkedIn.'}), 401
 
@@ -29,10 +29,10 @@ def linkedin_required(func):
 
 
 def twitter_required(func):
-    user = User.query.get(1)  # Temporary workaround
-
     @wraps(func)
     def decorator(*args, **kwargs):
+        user = User.query.get(1)  # Temporary workaround
+
         if not user.twitter_token:
             return jsonify({'error': 'Unauthenticated for Twitter.'}), 401
 
