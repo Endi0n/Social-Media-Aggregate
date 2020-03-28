@@ -6,12 +6,18 @@ class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
-    username = db.Column(db.String(50), unique=True, nullable=False, index=True)
+    email = db.Column(db.String(50), unique=True, nullable=False, index=True)
     password = db.Column(db.String(100), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
 
     linkedin_token = db.relationship('LinkedInToken', backref='user', lazy=True, uselist=False)
     tumblr_token = db.relationship('TumblrToken', backref='user', lazy=True, uselist=False)
     twitter_token = db.relationship('TwitterToken', backref='user', lazy=True, uselist=False)
+
+    def __init__(self, email, password, name):
+        self.email = email
+        self.password = password
+        self.name = name
 
 
 class LinkedInToken(db.Model):
