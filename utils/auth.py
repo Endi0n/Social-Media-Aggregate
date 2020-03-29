@@ -41,17 +41,16 @@ def twitter_required(func):
 
     return decorator
 
-    
 
 def tumblr_required(func):
-    user = User.query.get(1)  # Temporary workaround
-    
     @wraps(func)
     def decorator(*args, **kwargs):
+        user = User.query.get(1)  # Temporary workaround
+
         if not user.tumblr_token:
             return jsonify({'error': 'Unauthenticated for Tumblr.'}), 401
 
-        tumblr_client = TumblrAPI.client(user.tumblr_token.token, user.tumblr_token.token_secret)
+        tumblr_client = TumblrAPI(user.tumblr_token.token, user.tumblr_token.token_secret)
         return func(tumblr_client, *args, **kwargs)
 
     return decorator

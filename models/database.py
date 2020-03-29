@@ -47,6 +47,11 @@ class TumblrToken(db.Model):
     updated_at = db.Column(db.DateTime)
     expires_at = db.Column(db.DateTime)
 
+    def __init__(self, user, token, token_secret):
+        self.user_id = user.id
+        self.token = token
+        self.token_secret = token_secret
+
 
 class TwitterToken(db.Model):
     __tablename__ = 'twitter_token'
@@ -57,6 +62,11 @@ class TwitterToken(db.Model):
     token = db.Column(db.String(1000), nullable=False)
     token_secret = db.Column(db.String(1000), nullable=False)
     updated_at = db.Column(db.DateTime)
+
+    def __init__(self, user, token, token_secret):
+        self.user_id = user.id
+        self.token = token
+        self.token_secret = token_secret
 
 
 class AppKey(db.Model):

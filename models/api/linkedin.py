@@ -17,9 +17,9 @@ class LinkedInAPI:
         return authorization_url
 
     @staticmethod
-    def generate_auth_token(redirect_uri, url):
+    def generate_auth_token(callback_url, url):
         # Step 2
-        linkedin = OAuth2Session(LinkedInAPI.CLIENT_KEY, redirect_uri=redirect_uri)
+        linkedin = OAuth2Session(LinkedInAPI.CLIENT_KEY, redirect_uri=callback_url)
         return linkedin.fetch_token('https://www.linkedin.com/oauth/v2/accessToken',
                                     client_secret=LinkedInAPI.CLIENT_SECRET,
                                     include_client_id=True,
