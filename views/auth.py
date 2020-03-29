@@ -1,9 +1,7 @@
-from models.api import LinkedInAPI
 from models.database import User
-from flask import Blueprint, redirect, request, jsonify
-from utils.auth import login_required, linkedin_required
-from app import app, db
-from datetime import datetime
+from flask import Blueprint, request, jsonify
+from flask_login import login_user, logout_user, login_required
+from app import db
 import bcrypt
 
 auth = Blueprint(__name__, __name__, url_prefix='/auth')
@@ -18,16 +16,20 @@ def signup():
     if len(password) < 7:
         return jsonify({'error': 'Password must be at least 7 characters long.'}), 400
 
-    with User.query.filter_by(email=email).first() as user:
-        if user:
-            return jsonify({'error': 'There is already an account registered with this email.'}), 409
+    user = User.query.filter_by(email=email).first()
+
+    if user:
+        return jsonify({'error': 'There is already an account registered with this email.'}), 409
 
     salt = bcrypt.gensalt()
-    hash = bcrypt.hashpw(password, salt)
+    hash = bcrypt.hashpw(password.encode(), salt).decode()
 
     user = User(email, hash, name)
     db.session.add(user)
     db.session.commit()
+
+    login_user(user)
+
     return jsonify({'message': 'Registration succeeded.'}), 201
 
 
@@ -40,5 +42,15 @@ def login():
     if not user:
         return jsonify({'error': 'Wrong email.'}), 401
 
-    if not bcrypt.checkpw(password, user.password):
+    if not bcrypt.checkpw(password.encode(), user.password.encode()):
         return jsonify({'error': 'Wrong password.'}), 401
+
+    login_user(user)
+
+    return jsonify({'message': 'Authentication succeeded.'})
+
+
+@auth.route('/logout', methods=['POST'])
+@login_required
+def logout():
+    logout_user()

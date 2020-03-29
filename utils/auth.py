@@ -1,15 +1,23 @@
 from functools import wraps
 from flask import jsonify
-from models.database import User
+from flask_login import current_user
+from app import login_manager
 from models.api import *
+from models.database import User
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 
 def login_required(func):
     @wraps(func)
     def decorator(*args, **kwargs):
-        user = User.query.get(1)  # Temporary workaround
+        if not current_user.is_authenticated:
+            return jsonify({'error': 'Unauthenticated.'}), 401
 
-        return func(user, *args, **kwargs)
+        return func(current_user, *args, **kwargs)
 
     return decorator
 
@@ -17,12 +25,13 @@ def login_required(func):
 def linkedin_required(func):
     @wraps(func)
     def decorator(*args, **kwargs):
-        user = User.query.get(1)  # Temporary workaround
+        if not current_user.is_authenticated:
+            return jsonify({'error': 'Unauthenticated.'}), 401
 
-        if not user.linkedin_token:
+        if not current_user.linkedin_token:
             return jsonify({'error': 'Unauthenticated for LinkedIn.'}), 401
 
-        linkedin_client = LinkedInAPI(user.linkedin_token.token)
+        linkedin_client = LinkedInAPI(current_user.linkedin_token.token)
         return func(linkedin_client, *args, **kwargs)
 
     return decorator
@@ -31,12 +40,13 @@ def linkedin_required(func):
 def twitter_required(func):
     @wraps(func)
     def decorator(*args, **kwargs):
-        user = User.query.get(1)  # Temporary workaround
+        if not current_user.is_authenticated:
+            return jsonify({'error': 'Unauthenticated.'}), 401
 
-        if not user.twitter_token:
+        if not current_user.twitter_token:
             return jsonify({'error': 'Unauthenticated for Twitter.'}), 401
 
-        twitter_client = TwitterAPI(user.twitter_token.token, user.twitter_token.token_secret)
+        twitter_client = TwitterAPI(current_user.twitter_token.token, current_user.twitter_token.token_secret)
         return func(twitter_client, *args, **kwargs)
 
     return decorator
@@ -45,12 +55,13 @@ def twitter_required(func):
 def tumblr_required(func):
     @wraps(func)
     def decorator(*args, **kwargs):
-        user = User.query.get(1)  # Temporary workaround
+        if not current_user.is_authenticated:
+            return jsonify({'error': 'Unauthenticated.'}), 401
 
-        if not user.tumblr_token:
+        if not current_user.tumblr_token:
             return jsonify({'error': 'Unauthenticated for Tumblr.'}), 401
 
-        tumblr_client = TumblrAPI(user.tumblr_token.token, user.tumblr_token.token_secret)
+        tumblr_client = TumblrAPI(current_user.tumblr_token.token, current_user.tumblr_token.token_secret)
         return func(tumblr_client, *args, **kwargs)
 
     return decorator
