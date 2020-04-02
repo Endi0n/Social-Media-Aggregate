@@ -10,6 +10,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(50), unique=True, nullable=False, index=True)
     password = db.Column(db.String(100), nullable=False)
     name = db.Column(db.String(100), nullable=False)
+    email_validated = db.Column(db.Boolean, nullable=False, default=False)
 
     linkedin_token = db.relationship('LinkedInToken', backref='user', lazy=True, uselist=False)
     tumblr_token = db.relationship('TumblrToken', backref='user', lazy=True, uselist=False)
@@ -19,6 +20,10 @@ class User(db.Model, UserMixin):
         self.email = email
         self.password = password
         self.name = name
+
+    @property
+    def is_active(self):
+        return self.email_validated
 
 
 class LinkedInToken(db.Model):

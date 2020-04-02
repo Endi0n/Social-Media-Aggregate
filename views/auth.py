@@ -1,8 +1,11 @@
 from models.database import User
 from flask import Blueprint, request, jsonify
 from flask_login import login_user, logout_user, login_required
-from app import db
+from app import app, db
+import utils.mail
+import utils.jwt
 import bcrypt
+import jwt
 
 auth = Blueprint(__name__, __name__, url_prefix='/auth')
 
@@ -28,7 +31,7 @@ def signup():
     db.session.add(user)
     db.session.commit()
 
-    login_user(user)
+    utils.mail.send_validate_email(email, utils.jwt.generate_validate_email_token(user))
 
     return jsonify({'message': 'Registration succeeded.'}), 201
 
@@ -54,3 +57,13 @@ def login():
 @login_required
 def logout():
     logout_user()
+
+
+@auth.route('/validate_email')
+def validate_email():
+    token = jwt.decode(request.args.get('token').encode(), app.config['SECRET_KEY'])
+    user = User.query.get(token['user_id'])
+    user.email_validated = True
+    db.session.commit()
+
+    return jsonify({'message': 'Email validated successfully.'}), 200
