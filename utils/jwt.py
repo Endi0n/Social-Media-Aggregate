@@ -4,7 +4,9 @@ import jwt
 
 
 def generate_validate_email_token(user):
-    return jwt.encode(
-        {'user_id': user.id, 'email': user.email, 'timestamp': datetime.timestamp(datetime.now())},
-        app.config['SECRET_KEY']
-    ).decode()
+    return jwt.encode({
+        'iat': datetime.timestamp(datetime.utcnow()),
+        'user_id': user.id,
+        'email': user.email,
+        'request_type': 'validate_email'
+    }, app.config['SECRET_KEY']).decode()
