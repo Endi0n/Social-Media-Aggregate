@@ -57,6 +57,7 @@ def login():
 @flask_login.login_required
 def logout():
     flask_login.logout_user()
+    return jsonify(message='User logged out.')
 
 
 @auth.route('/validate_email')
