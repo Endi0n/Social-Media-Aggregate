@@ -77,24 +77,41 @@ def validate_email():
 
 
 
-@app.route("/reset_password", methods=["GET", "POST"])
+@app.route("/reset_password", methods=['GET', 'POST'])
 def reset_password():
-    if request.method == "POST":
+    if request.method == 'POST':
         email = request.form.get('email')
+        if not email:
+            return jsonify(error='Email parameter missing.'), 400
+
         user = User.query.filter_by(email=email).first()
+
         token = utils.jwt.generate_reset_password_token(user)
         utils.mail.send_reset_password_email(email, token)
-        return jsonify({'message': 'Email sent succesfully'}), 200
 
-    elif request.method == "GET":
-        token = jwt.decode(request.args.get('token').encode(), app.config['SECRET_KEY'])
+        return jsonify(message='Email sent succesfully')
+
+    elif request.method == 'GET':
+        token_code = request.args.get('token')
+        if not token_code:
+            return jsonify(error='Token parameter missing.'), 400
+
+        password = request.args.get('password')
+        if not password:
+            return jsonify(error='Password parameter missing.'), 400
+
+        token = jwt.decode(token_code.encode(), app.config['SECRET_KEY'])
+
+        if token['request_type'] != 'reset_password':
+            return jsonify(error='Wrong token type.'), 400
 
         user = User.query.get(token['user_id'])
-        if user.update_at > token['timestamp']:
-            return jsonify({'message': 'Token expired'}), 403
+        if user.update_at.total_seconds() > int(token['iat']):
+            return jsonify(message='Token expired.'), 403
 
-        user.password = bcrypt(request.form.get('password'))
-        user.update_at = datetime.now()
+        salt = bcrypt.gensalt()
+        hash = bcrypt.hashpw(password.encode(), salt).decode()
+        user.password = hash
         db.session.commit()
 
-        return jsonify({'message': 'Password reset succesfully'}), 200
+        return jsonify(message='Password reset succesfully')
