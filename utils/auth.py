@@ -11,7 +11,7 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
-def _valid_email_required(func):
+def _verified_user_check(func):
     def decorator(*args, **kwargs):
         if not current_user.is_authenticated:
             return jsonify(error='Unauthenticated.'), 401
@@ -24,9 +24,15 @@ def _valid_email_required(func):
     return decorator
 
 
-def user_required(func):
+def verified_user_required(func):
     @wraps(func)
     def decorator(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return jsonify(error='Unauthenticated.'), 401
+
+        if not current_user.is_valid:
+            return jsonify(error='Email is not validated.'), 403
+
         return func(current_user, *args, **kwargs)
 
     return decorator
@@ -34,7 +40,7 @@ def user_required(func):
 
 def linkedin_required(func):
     @wraps(func)
-    @_valid_email_required
+    @_verified_user_check
     def decorator(*args, **kwargs):
         if not current_user.linkedin_token:
             return jsonify(error='Unauthenticated for LinkedIn.'), 401
@@ -47,7 +53,7 @@ def linkedin_required(func):
 
 def twitter_required(func):
     @wraps(func)
-    @_valid_email_required
+    @_verified_user_check
     def decorator(*args, **kwargs):
         if not current_user.twitter_token:
             return jsonify(error='Unauthenticated for Twitter.'), 401
@@ -60,7 +66,7 @@ def twitter_required(func):
 
 def tumblr_required(func):
     @wraps(func)
-    @_valid_email_required
+    @_verified_user_check
     def decorator(*args, **kwargs):
         if not current_user.tumblr_token:
             return jsonify(error='Unauthenticated for Tumblr.'), 401

@@ -1,7 +1,7 @@
 from models.api import LinkedInAPI
 from models.database import LinkedInToken
 from flask import Blueprint, redirect, request, jsonify
-from utils.auth import user_required, linkedin_required
+from utils.auth import verified_user_required, linkedin_required
 from app import app, db
 from datetime import datetime
 
@@ -10,13 +10,13 @@ CALLBACK_URL = app.config['BASE_DOMAIN'] + '/linkedin/auth/callback'
 
 
 @linkedin.route('/auth')
-@user_required
+@verified_user_required
 def auth(user):
     return redirect(LinkedInAPI.generate_auth_url(CALLBACK_URL))
 
 
 @linkedin.route('/auth/callback')
-@user_required
+@verified_user_required
 def auth_callback(user):
     token = LinkedInAPI.generate_auth_token(CALLBACK_URL, request.url)
     token_record = LinkedInToken(user, token['access_token'],

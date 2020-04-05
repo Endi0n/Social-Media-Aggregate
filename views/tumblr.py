@@ -1,7 +1,7 @@
 from models.api import TumblrAPI
 from models.database import TumblrToken
 from flask import Blueprint, redirect, request, jsonify, session
-from utils.auth import user_required, tumblr_required
+from utils.auth import verified_user_required, tumblr_required
 from app import app, db
 
 tumblr = Blueprint(__name__, __name__, url_prefix='/tumblr')
@@ -9,7 +9,7 @@ CALLBACK_URL = app.config['BASE_DOMAIN'] + '/tumblr/auth/callback'
 
 
 @tumblr.route('/auth')
-@user_required
+@verified_user_required
 def auth(user):
     oauth_token, oauth_token_secret = TumblrAPI.generate_auth_req_token()
     session['tumblr_req_auth_token'], session['tumblr_req_auth_token_secret'] = oauth_token, oauth_token_secret
@@ -18,7 +18,7 @@ def auth(user):
 
 
 @tumblr.route('/auth/callback')
-@user_required
+@verified_user_required
 def auth_callback(user):
     oauth_token, oauth_token_secret = TumblrAPI.generate_auth_token(
         request.url,

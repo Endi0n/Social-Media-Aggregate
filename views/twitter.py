@@ -1,14 +1,14 @@
 from models.api import TwitterAPI
 from models.database import TwitterToken
 from flask import Blueprint, redirect, request, jsonify, session
-from utils.auth import user_required, twitter_required
+from utils.auth import verified_user_required, twitter_required
 from app import db
 
 twitter = Blueprint(__name__, __name__, url_prefix='/twitter')
 
 
 @twitter.route('/auth')
-@user_required
+@verified_user_required
 def auth(user):
     oauth_token, oauth_token_secret = TwitterAPI.generate_auth_req_token()
     session['twitter_req_auth_token'], session['twitter_req_auth_token_secret'] = oauth_token, oauth_token_secret
@@ -16,7 +16,7 @@ def auth(user):
 
 
 @twitter.route('/auth/callback')
-@user_required
+@verified_user_required
 def auth_callback(user):
     oauth_token, oauth_token_secret = TwitterAPI.generate_auth_token(session['twitter_req_auth_token'],
                                                                      session['twitter_req_auth_token_secret'],
