@@ -74,3 +74,27 @@ def validate_email():
     db.session.commit()
 
     return jsonify(message='Email validated successfully.'), 200
+
+
+
+@app.route("/reset_password", methods=["GET", "POST"])
+def reset_password():
+    if request.method == "POST":
+        email = request.form.get('email')
+        user = User.query.filter_by(email=email).first()
+        token = utils.jwt.generate_reset_password_token(user)
+        utils.mail.send_reset_password_email(email, token)
+        return jsonify({'message': 'Email sent succesfully'}), 200
+
+    elif request.method == "GET":
+        token = jwt.decode(request.args.get('token').encode(), app.config['SECRET_KEY'])
+
+        user = User.query.get(token['user_id'])
+        if user.update_at > token['timestamp']:
+            return jsonify({'message': 'Token expired'}), 403
+
+        user.password = bcrypt(request.form.get('password'))
+        user.update_at = datetime.now()
+        db.session.commit()
+
+        return jsonify({'message': 'Password reset succesfully'}), 200
