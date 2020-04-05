@@ -7,10 +7,12 @@ class User(db.Model, UserMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
+    updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now(), nullable=False)
+
     email = db.Column(db.String(50), unique=True, nullable=False, index=True)
     password = db.Column(db.String(100), nullable=False)
     name = db.Column(db.String(100), nullable=False)
-    email_validated = db.Column(db.Boolean, nullable=False, default=False)
+    email_validated = db.Column(db.Boolean, nullable=False, server_default=False)
 
     linkedin_token = db.relationship('LinkedInToken', backref='user', lazy=True, uselist=False)
     tumblr_token = db.relationship('TumblrToken', backref='user', lazy=True, uselist=False)
@@ -31,9 +33,10 @@ class LinkedInToken(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
+    
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
     token = db.Column(db.String(1000), nullable=False)
-    updated_at = db.Column(db.DateTime)
+    updated_at = db.Column(db.DateTime, onupdate=db.func.now())
     expires_at = db.Column(db.DateTime)
 
     def __init__(self, user, token, expires_at):
@@ -47,11 +50,10 @@ class TumblrToken(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
+
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
     token = db.Column(db.String(1000), nullable=False)
     token_secret = db.Column(db.String(1000), nullable=False)
-    updated_at = db.Column(db.DateTime)
-    expires_at = db.Column(db.DateTime)
 
     def __init__(self, user, token, token_secret):
         self.user_id = user.id
@@ -64,10 +66,10 @@ class TwitterToken(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
+
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
     token = db.Column(db.String(1000), nullable=False)
     token_secret = db.Column(db.String(1000), nullable=False)
-    updated_at = db.Column(db.DateTime)
 
     def __init__(self, user, token, token_secret):
         self.user_id = user.id
