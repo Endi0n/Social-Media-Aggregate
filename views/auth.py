@@ -48,7 +48,7 @@ def login():
     if not bcrypt.checkpw(password.encode(), user.password.encode()):
         return jsonify(error='Wrong password.'), 401
 
-    flask_login.login_user(user)
+    flask_login.login_user(user, force=True)
 
     return jsonify(message='Authentication succeeded.')
 

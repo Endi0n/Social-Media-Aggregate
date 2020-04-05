@@ -16,7 +16,7 @@ def _verified_user_check(func):
         if not current_user.is_authenticated:
             return jsonify(error='Unauthenticated.'), 401
 
-        if not current_user.is_valid:
+        if not current_user.is_active:
             return jsonify(error='Email is not validated.'), 403
 
         func(*args, **kwargs)
@@ -30,7 +30,7 @@ def verified_user_required(func):
         if not current_user.is_authenticated:
             return jsonify(error='Unauthenticated.'), 401
 
-        if not current_user.is_valid:
+        if not current_user.is_active:
             return jsonify(error='Email is not validated.'), 403
 
         return func(current_user, *args, **kwargs)
