@@ -19,7 +19,7 @@ def _verified_user_check(func):
         if not current_user.is_active:
             return jsonify(error='Email is not validated.'), 403
 
-        func(*args, **kwargs)
+        return func(*args, **kwargs)
 
     return decorator
 
