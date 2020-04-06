@@ -31,8 +31,28 @@ def auth_callback(user):
 def profile(linkedin_client):
     profile = linkedin_client.get_profile()
     connections = linkedin_client.get_connections()
+
     res = {}
     res['name'] = f"{list(profile['firstName']['localized'].values())[0]} {list(profile['lastName']['localized'].values())[0]}"
     res['profile_picture'] = profile['profilePicture']['displayImage~']['elements'][-1]['identifiers'][0]['identifier']
     res['followers'] = connections
+
     return jsonify(res)
+
+
+@linkedin.route('/profile/companies')
+@linkedin_required
+def get_companies(linkedin_client):
+    return linkedin_client.get_companies()
+
+
+@linkedin.route('/profile/posts')
+@linkedin_required
+def get_all_posts(linkedin_client):
+    return linkedin_client.get_self_posts()
+
+
+@linkedin.route('/post/<post_id>')
+@linkedin_required
+def view_post(linkedin_client, post_id):
+    return jsonify(linkedin_client.get_post(post_id))

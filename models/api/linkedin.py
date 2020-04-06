@@ -8,11 +8,15 @@ class LinkedInAPI:
     CLIENT_KEY = APP_KEY.client_key
     CLIENT_SECRET = APP_KEY.client_secret
 
+    application_token = None
+
     @staticmethod
     def generate_auth_url(callback_url):
         # Step 1
         authorization_base_url = 'https://www.linkedin.com/oauth/v2/authorization'
-        linkedin = OAuth2Session(LinkedInAPI.CLIENT_KEY, redirect_uri=callback_url, scope=['r_liteprofile'])
+        linkedin = OAuth2Session(LinkedInAPI.CLIENT_KEY, redirect_uri=callback_url,
+                                 scope=['r_liteprofile', 'r_organization_social', 'rw_organization_admin'])
+
         authorization_url, state = linkedin.authorization_url(authorization_base_url)
         return authorization_url
 
@@ -27,13 +31,42 @@ class LinkedInAPI:
 
     def __init__(self, token):
         self.__linkedin = OAuth2Session(LinkedInAPI.CLIENT_KEY, token={'access_token': token})
-        self.__user_id = self.get_profile()['id']
 
     def get_profile(self):
-        return json.loads(self.__linkedin.get('https://api.linkedin.com/v2/me?projection=(id,firstName,lastName,profilePicture(displayImage~digitalmediaAsset:playableStreams))').content.decode())
+        return json.loads(self.__linkedin.get(
+            'https://api.linkedin.com/v2/me?projection=(id,firstName,lastName,profilePicture('
+            'displayImage~digitalmediaAsset:playableStreams))'
+        ).content.decode())
 
     def get_connections(self):
-        return json.loads(self.__linkedin.get('https://api.linkedin.com/v2/connections?q=viewer&count=0').content.decode())
+        return json.loads(
+            self.__linkedin.get('https://api.linkedin.com/v2/connections?q=viewer&count=0').content.decode())
+
+    def get_companies(self):
+        return json.loads(
+            self.__linkedin.get(
+                'https://api.linkedin.com/v2/organizationalEntityAcls?q=roleAssignee&role=ADMINISTRATOR'
+            ).content.decode())
+
+    def get_self_posts(self):
+        # TODO:
+        organization_urn = self.get_companies()['elements'][0]['organizationalTarget']
+        return json.loads(self.__linkedin.get(
+            f'https://api.linkedin.com/v2/shares?q=owners&owners={organization_urn}&sharesPerOwner=100'
+        ).content.decode())
+
+    def __parse_post(self, post):
+        new_json = {}
+
+        new_json['created_at'] = post['created']['time']
+        new_json['text'] = post['text']['text']
+
+        return new_json
+
+    def get_post(self, post_id):
+        return self.__parse_post(
+            json.loads(self.__linkedin.get('https://api.linkedin.com/v2/shares/' + post_id).content.decode()))
+
 
 if __name__ == '__main__':
     import os
