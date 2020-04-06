@@ -24,6 +24,9 @@ def send_reset_password_email(email, token):
 
 
 def send_internal_error_email(error):
+    if not os.environ.get('ACTIVATE_ERROR_MAILS', False):
+        return
+
     msg = Message(
         '[SMA] An Undefined Error Occurred!',
         body=error,
