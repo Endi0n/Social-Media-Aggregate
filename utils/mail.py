@@ -1,5 +1,6 @@
 from flask_mail import Message
 from app import app, mail
+import os
 
 
 def send_validate_email(email, token):
@@ -11,11 +12,22 @@ def send_validate_email(email, token):
 
     mail.send(msg)
 
+
 def send_reset_password_email(email, token):
     msg = Message(
         'Reset your password for your Social Media Aggregate account!',
         body=f"{app.config['BASE_DOMAIN']}/auth/reset_password?token={token}",
         recipients=[email]
+    )
+
+    mail.send(msg)
+
+
+def send_internal_error_email(error):
+    msg = Message(
+        '[SMA] An Undefined Error Occurred!',
+        body=error,
+        recipients=[os.getenv('ADMIN_EMAIL')]
     )
 
     mail.send(msg)

@@ -4,11 +4,14 @@ import oauthlib.oauth2 as oauth2
 import jwt.exceptions
 from smtplib import SMTPException
 from sqlalchemy.exc import SQLAlchemyError
+import utils.mail
 from app import app
 
 
 @app.errorhandler(500)
 def internal_error_handler(e):
+    app.logger.error(str(e))
+    utils.mail.send_internal_error_email(f'{str(e)}\nOriginal error: {str(e.original_exception)}')
     return jsonify(error='Internal server error.'), 500
 
 
@@ -21,6 +24,7 @@ def oauth2_token_expired_error_handler(e):
 @app.errorhandler(oauth2.OAuth2Error)
 def oauth_error_handler(e):
     app.logger.error(e.description)
+    utils.mail.send_internal_error_email(e.description)
     return jsonify(error=e.description), 503
 
 
@@ -38,4 +42,5 @@ def smtp_error_handler(e):
 @app.errorhandler(SQLAlchemyError)
 def sqlalchemy_error_handler(e):
     app.logger.error(e.message)
+    utils.mail.send_internal_error_email(e.message)
     return jsonify(error='Internal server error.'), 500
