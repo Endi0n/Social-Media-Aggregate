@@ -29,4 +29,10 @@ def auth_callback(user):
 @linkedin.route('/profile')
 @linkedin_required
 def profile(linkedin_client):
-    return jsonify(linkedin_client.get_profile())
+    profile = linkedin_client.get_profile()
+    connections = linkedin_client.get_connections()
+    res = {}
+    res['name'] = f"{list(profile['firstName']['localized'].values())[0]} {list(profile['lastName']['localized'].values())[0]}"
+    res['profile_picture'] = profile['profilePicture']['displayImage~']['elements'][-1]['identifiers'][0]['identifier']
+    res['followers'] = connections
+    return jsonify(res)

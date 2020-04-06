@@ -26,12 +26,14 @@ class LinkedInAPI:
                                     authorization_response=url)
 
     def __init__(self, token):
-        self.__token = token
+        self.__linkedin = OAuth2Session(LinkedInAPI.CLIENT_KEY, token={'access_token': token})
+        self.__user_id = self.get_profile()['id']
 
     def get_profile(self):
-        linkedin = OAuth2Session(LinkedInAPI.CLIENT_KEY, token={'access_token': self.__token})
-        return json.loads(linkedin.get('https://api.linkedin.com/v2/me').content.decode())
+        return json.loads(self.__linkedin.get('https://api.linkedin.com/v2/me?projection=(id,firstName,lastName,profilePicture(displayImage~digitalmediaAsset:playableStreams))').content.decode())
 
+    def get_connections(self):
+        return json.loads(self.__linkedin.get('https://api.linkedin.com/v2/connections?q=viewer&count=0').content.decode())
 
 if __name__ == '__main__':
     import os
