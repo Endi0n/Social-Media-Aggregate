@@ -34,3 +34,9 @@ def auth_callback(user):
 @twitter_required
 def profile(twitter_client):
     return jsonify(twitter_client.get_profile())
+
+
+@twitter.route('/post/<post_id>')
+@twitter_required
+def view_post(twitter_client, post_id):
+    return jsonify(twitter_client.get_post(post_id))
