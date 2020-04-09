@@ -38,9 +38,10 @@ class LinkedInAPI:
             'displayImage~digitalmediaAsset:playableStreams))'
         ).content.decode())
 
-    def get_connections(self):
+    def get_followers(self):
+        organization_urn = self.get_companies()['elements'][0]['organizationalTarget']
         return json.loads(
-            self.__linkedin.get('https://api.linkedin.com/v2/connections?q=viewer&count=0').content.decode())
+            self.__linkedin.get(f'https://api.linkedin.com/v2/networkSizes/{organization_urn}?edgeType=CompanyFollowedByMember').content.decode())
 
     def get_companies(self):
         return json.loads(
