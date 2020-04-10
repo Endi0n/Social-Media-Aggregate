@@ -2,9 +2,10 @@ from models.database import User
 from flask import Blueprint, request, jsonify
 import flask_login
 from app import app, db
+import utils.auth
+import utils.request
 import utils.mail
 import utils.jwt
-import utils.auth
 import bcrypt
 import jwt
 
@@ -13,9 +14,9 @@ auth = Blueprint(__name__, __name__, url_prefix='/auth')
 
 @auth.route('/signup', methods=['POST'])
 def signup():
-    name = request.form.get('name')
-    email = request.form.get('email')
-    password = request.form.get('password')
+    name = utils.request.form_get('name')
+    email = utils.request.form_get('email')
+    password = utils.request.form_get('password')
 
     if len(password) < 7:
         return jsonify(error='Password must be at least 7 characters long.'), 400
@@ -46,8 +47,8 @@ def login():
         return jsonify(message='Authenticated.')
 
     if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
+        email = utils.request.form_get('email')
+        password = utils.request.form_get('password')
 
         user = User.query.filter_by(email=email).first()
         if not user:
@@ -70,9 +71,7 @@ def logout():
 
 @auth.route('/validate_email')
 def validate_email():
-    token_code = request.args.get('token')
-    if not token_code:
-        return jsonify(error='Token parameter missing.'), 400
+    token_code = utils.request.args_get('token')
 
     token = jwt.decode(token_code.encode(), app.config['SECRET_KEY'])
     if token['request_type'] != 'validate_email':
@@ -88,9 +87,7 @@ def validate_email():
 @auth.route("/reset_password", methods=['GET', 'POST'])
 def reset_password():
     if request.method == 'POST':
-        email = request.form.get('email')
-        if not email:
-            return jsonify(error='Email parameter missing.'), 400
+        email = utils.request.form_get('email')
 
         user = User.query.filter_by(email=email).first()
 
@@ -100,13 +97,9 @@ def reset_password():
         return jsonify(message='Email sent succesfully.')
 
     elif request.method == 'GET':
-        token_code = request.args.get('token')
-        if not token_code:
-            return jsonify(error='Token parameter missing.'), 400
+        token_code = utils.request.args_get('token')
 
-        password = request.form.get('password')
-        if not password:
-            return jsonify(error='Password parameter missing.'), 400
+        password = utils.request.form_get('password')
 
         token = jwt.decode(token_code.encode(), app.config['SECRET_KEY'])
 

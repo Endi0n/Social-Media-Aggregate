@@ -15,6 +15,11 @@ def internal_error_handler(e):
     return jsonify(error='Internal server error.'), 500
 
 
+@app.errorhandler(KeyError)
+def missing_parameter_error_handler(e):
+    return jsonify(error=e.args[0]), 400
+
+
 @app.errorhandler(oauth2.TokenExpiredError)
 def oauth2_token_expired_error_handler(e):
     return jsonify(error='OAuth2 token expired.'), 401
