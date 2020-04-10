@@ -37,6 +37,8 @@ def profile(linkedin_client):
     res['profile_picture'] = profile['profilePicture']['displayImage~']['elements'][-1]['identifiers'][0]['identifier']
     res['followers'] = followers['firstDegreeSize']
 
+    res['original'] = profile
+
     return jsonify(res)
 
 
@@ -50,6 +52,12 @@ def get_companies(linkedin_client):
 @linkedin_required
 def get_all_posts(linkedin_client):
     return linkedin_client.get_self_posts()
+
+
+@linkedin.route('/profile/posts2')
+@linkedin_required
+def get_all_posts2(linkedin_client):
+    return linkedin_client.get_self_posts2()
 
 
 @linkedin.route('/post/<post_id>')
