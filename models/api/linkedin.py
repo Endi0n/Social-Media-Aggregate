@@ -2,7 +2,6 @@ from requests_oauthlib import OAuth2Session
 from models.database import AppKey
 import urllib
 import json
-import re
 
 
 class LinkedInAPI:
@@ -53,43 +52,12 @@ class LinkedInAPI:
                 'https://api.linkedin.com/v2/organizationalEntityAcls?q=roleAssignee&role=ADMINISTRATOR'
             ).content.decode())
 
-    def __parse_post(self, post):
-        new_json = {}
-
-        new_json['created_at'] = post['created']['time'] // 1e3
-        new_json['id'] = int(post['id'])
-
-        if post['text']:
-            new_json['text'] = post['text']['text']
-
-        hashtags = re.findall('#([^ .])', new_json['text'])
-        if hashtags:
-            new_json['hashtags'] = hashtags
-
-        if 'content' in post:
-            new_json['embed'] = []
-            for content in post['content']['contentEntities']:
-                new_json['embed'].append({
-                    'type': 'photo',
-                    'url': content['entityLocation']
-                })
-
-        new_json['orginal'] = post  # Temporary for debugging purposes
-
-        return new_json
-
     def get_self_posts(self):
         # TODO:
         organization_urn = self.get_companies()['elements'][0]['organizationalTarget']
-        posts = json.loads(self.__linkedin.get(
+        return json.loads(self.__linkedin.get(
             f'https://api.linkedin.com/v2/shares?q=owners&owners={organization_urn}&sharesPerOwner=100'
         ).content.decode())
-
-        new_json = {'posts': []}
-        for post in posts['elements']:
-            new_json['posts'].append(self.__parse_post(post))
-
-        return new_json
 
     def get_self_posts2(self):
         self.__linkedin.headers.update({'X-Restli-Protocol-Version': '2.0.0'})
@@ -100,8 +68,7 @@ class LinkedInAPI:
         ).content.decode())
 
     def get_post(self, post_id):
-        return self.__parse_post(
-            json.loads(self.__linkedin.get('https://api.linkedin.com/v2/shares/' + post_id).content.decode()))
+        return json.loads(self.__linkedin.get('https://api.linkedin.com/v2/shares/' + post_id).content.decode())
 
 
 if __name__ == '__main__':

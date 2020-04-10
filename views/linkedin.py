@@ -1,5 +1,4 @@
-from models.api import LinkedInAPI
-from models.database import LinkedInToken
+from models import LinkedInAPI, LinkedInToken, Post
 from flask import Blueprint, redirect, request, jsonify
 from utils.auth import verified_user_required, linkedin_required
 from app import app, db
@@ -51,7 +50,12 @@ def get_companies(linkedin_client):
 @linkedin.route('/profile/posts')
 @linkedin_required
 def get_all_posts(linkedin_client):
-    return linkedin_client.get_self_posts()
+    posts = {'posts': []}
+
+    for post in linkedin_client.get_self_posts()['elements']:
+        posts['posts'].append(Post.from_linkedin(post).as_dict())
+
+    return posts
 
 
 @linkedin.route('/profile/posts2')
@@ -63,4 +67,4 @@ def get_all_posts2(linkedin_client):
 @linkedin.route('/post/<post_id>')
 @linkedin_required
 def view_post(linkedin_client, post_id):
-    return jsonify(linkedin_client.get_post(post_id))
+    return jsonify(Post.from_linkedin(linkedin_client.get_post(post_id)).as_dict())
