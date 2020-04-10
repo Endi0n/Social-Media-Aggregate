@@ -2,7 +2,7 @@ from requests_oauthlib import OAuth1Session
 from models.database import AppKey
 import json
 from twitter import Api
-
+from datetime import datetime
 
 class TwitterAPI:
     APP_KEY = AppKey.query.filter_by(platform='TWITTER').one()
@@ -43,17 +43,23 @@ class TwitterAPI:
                          tweet_mode='extended')
 
     def get_profile(self):
-        oauth = OAuth1Session(self.CLIENT_KEY,
-                              self.CLIENT_SECRET,
-                              self.__oauth_token,
-                              self.__oauth_token_secret)
-        response = oauth.get('https://api.twitter.com/1.1/account/verify_credentials.json')
-        return json.loads(response.content.decode())
+        profilestatus = self.__api.VerifyCredentials().AsDict()
+        profile_json = {}
+        if 'name' in profilestatus:
+            profile_json['user_name'] = profilestatus['name']
+        if 'followers_count' in profilestatus:
+            profile_json['followers'] = profilestatus['followers_count']
+        if 'screen_name' in profilestatus:
+            profile_json['follow_name'] = profilestatus['screen_name']
+        if 'profile_image_url_https' in profilestatus:
+            profile_json['profile_image'] = profilestatus['profile_image_url_https']
+        return profile_json
+
 
     def __post_json(self, status):
         post_json = {}
         if 'created_at' in status:
-            post_json['utc-time'] = status['created_at']
+            post_json['created_at'] = datetime.strptime(status['created_at'], '%a %b %d %H:%M:%S %z %Y').timestamp()
         if 'hashtags' in status and len(status['hashtags']):
             post_json['hashtags'] = [tag['text'] for tag in status['hashtags']]
         if 'user_mentions' in status and len(status['user_mentions']):
@@ -95,3 +101,4 @@ class TwitterAPI:
     def get_post(self, post_id):
         status = self.__api.GetStatus(post_id).AsDict()
         return self.__post_json(status)
+
