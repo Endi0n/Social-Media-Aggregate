@@ -4,6 +4,7 @@ import flask_login
 from app import app, db
 import utils.mail
 import utils.jwt
+import utils.auth
 import bcrypt
 import jwt
 
@@ -36,21 +37,28 @@ def signup():
     return jsonify(message='Registration succeeded.'), 201
 
 
-@auth.route('/login', methods=['POST'])
+@auth.route('/login', methods=['GET', 'POST'])
 def login():
-    email = request.form.get('email')
-    password = request.form.get('password')
+    if request.method == 'GET':
+        user = utils.auth.get_authenticated_user()
+        if not user:
+            return jsonify(message='Unauthenticated.'), 401
+        return jsonify(message='Authenticated.')
 
-    user = User.query.filter_by(email=email).first()
-    if not user:
-        return jsonify(error='Wrong email.'), 401
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
 
-    if not bcrypt.checkpw(password.encode(), user.password.encode()):
-        return jsonify(error='Wrong password.'), 401
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            return jsonify(error='Wrong email.'), 401
 
-    flask_login.login_user(user, force=True)
+        if not bcrypt.checkpw(password.encode(), user.password.encode()):
+            return jsonify(error='Wrong password.'), 401
 
-    return jsonify(message='Authentication succeeded.')
+        flask_login.login_user(user, force=True)
+
+        return jsonify(message='Authentication succeeded.')
 
 
 @auth.route('/logout', methods=['POST'])
@@ -74,7 +82,7 @@ def validate_email():
     user.email_validated = True
     db.session.commit()
 
-    return jsonify(message='Email validated successfully.'), 200
+    return jsonify(message='Email validated successfully.')
 
 
 @auth.route("/reset_password", methods=['GET', 'POST'])

@@ -11,6 +11,12 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
+def get_authenticated_user():
+    if not current_user.is_authenticated:
+        return None
+    return current_user
+
+
 def _verified_user_check(func):
     def decorator(*args, **kwargs):
         if not current_user.is_authenticated:
