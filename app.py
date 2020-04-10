@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_mail import Mail
@@ -7,6 +8,8 @@ import os
 
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY')
+
+CORS(app)
 
 login_manager = LoginManager(app)
 
