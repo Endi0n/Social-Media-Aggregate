@@ -17,6 +17,7 @@ def internal_error_handler(e):
 
 @app.errorhandler(KeyError)
 def missing_parameter_error_handler(e):
+    app.logger.error(str(e))
     return jsonify(error=e.args[0]), 400
 
 
