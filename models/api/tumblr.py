@@ -60,6 +60,64 @@ class TumblrAPI(TumblrRestClient):
         return tokens['oauth_token'], tokens['oauth_token_secret']
 
 
+    def get_notes_count_info(self, notes):
+        counter = dict()
+        for note in notes:
+            if note['type'] in counter:
+                counter[note['type']] += 1
+            else:
+                counter[note['type']] = 1
+        return counter
+
+
+    def _get_post(self, post_id):
+        username = self.info()['user']['name']
+        blogname = '{}.tumblr.com'.format(username)
+        response = self.posts(blogname, id=post_id, notes_info=True, filter='text')
+        return response['posts'][0]
+
+
+    def get_post(self, post_id):
+        post = self._get_post(post_id)
+        result = dict()
+
+        result['id'] = post['id_string']
+        result['created_at'] = post['timestamp']
+        result['hashtags'] = post['tags']
+        result['type'] = post['type']
+
+        notes_info = self.get_notes_count_info(post['notes'])
+        result['likes'] = notes_info['like']
+        result['reblogs'] = notes_info['reblog']
+
+        content = dict()
+        if post['type'] == 'text':
+            content['body'] = post['body']
+
+        elif post['type'] == 'chat':
+            content['body'] = post['body']
+
+        elif post['type'] == 'link':
+            content['link_image'] = post['link_image']
+            content['url'] = post['url']
+            content['excerpt'] = post['excerpt']
+            content['description'] = post['description']
+
+        elif post['type'] == 'photo':
+            content['photos'] = post['photos']
+
+        elif post['type'] == 'video':
+            content['video_type'] = post['video_type']
+            content['caption'] = post['caption']
+            content['premalink_url'] = post['permalink_url']
+            content['video'] = post['video']
+
+        if 'title' in post:
+            content['title'] = post['title']
+
+        result['content'] = content
+        return result
+
 if __name__ == '__main__':
     # /auth
     url, fetch_response = TumblrAPI.generate_auth_url('https://github.com/ceofil')

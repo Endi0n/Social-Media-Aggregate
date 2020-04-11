@@ -66,7 +66,15 @@ class Post:
 
     @classmethod
     def from_tumblr(cls, post):
-        pass
+        id = post['id']
+        timestamp = post['created_at']
+        likes = post['likes']
+        shares = post['reblogs']
+        text = 'dummy text' # TODO
+        hashtags = post['hashtags']
+        # embeds  # TODO
+        original = 'dummy original'
+        return Post(id, timestamp, likes, shares, text=text, hashtags=hashtags, original=original)
 
     @classmethod
     def from_twitter(cls, post):

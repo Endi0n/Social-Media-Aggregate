@@ -1,5 +1,4 @@
-from models.api import TumblrAPI
-from models.database import TumblrToken
+from models import TumblrAPI, TumblrToken, Post
 from flask import Blueprint, redirect, request, jsonify, session
 from utils.auth import verified_user_required, tumblr_required
 from app import app, db
@@ -44,54 +43,8 @@ def profile(tumblr_client):
 
 
 
+@tumblr.route('/post/<post_id>')
+@tumblr_required
+def view_post(tumblr_client, post_id):
+    return jsonify(Post.from_tumblr(tumblr_client.get_post(post_id)).as_dict())
 
-
-# not consistent
-
-
-def _get_post(client, post_id):
-    username = client.info()['user']['name']
-    blogname = '{}.tumblr.com'.format(username)
-    response = client.posts(blogname, id=post_id)
-    return response['posts'][0]
-
-
-
-
-def get_post(client, post_id):
-    post = _get_post(client, post_id)
-    result = dict()
-    
-    result['id'] = post['id_string']
-    result['created_at'] = post['timestamp']
-    result['note_count'] = post['note_count']
-    result['hashtags'] = post['tags']
-    result['type'] = post['type']
-
-    content = dict()
-    if post['type'] == 'text':
-        content['body'] = post['body']
-        
-    elif post['type'] == 'chat':
-        content['body'] = post['body']
-
-    elif post['type'] == 'link':
-        content['link_image'] = post['link_image']
-        content['url'] = post['url']
-        content['excerpt'] = post['excerpt']
-        content['description'] = post['description']
-
-    elif post['type'] == 'photo':
-        content['photos'] = post['photos']
-
-    elif post['type'] == 'video':
-        content['video_type'] = post['video_type']
-        content['caption'] = post['caption']
-        content['premalink_url'] = post['permalink_url']
-        content['video'] = post['video']
-
-    if 'title' in post:
-        content['title'] = post['title']
-
-    result['content'] = content
-    return result
