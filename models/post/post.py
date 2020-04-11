@@ -72,9 +72,9 @@ class Post:
         shares = post['reblogs']
         text = 'dummy text' # TODO
         hashtags = post['hashtags']
-        # embeds  # TODO
+        embeds = post['embeds']
         original = 'dummy original'
-        return Post(id, timestamp, likes, shares, text=text, hashtags=hashtags, original=original)
+        return Post(id, timestamp, likes, shares, text=text, hashtags=hashtags, embeds=embeds, original=original)
 
     @classmethod
     def from_twitter(cls, post):

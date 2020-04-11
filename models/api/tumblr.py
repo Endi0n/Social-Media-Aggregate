@@ -1,4 +1,5 @@
 from models.database import AppKey
+from models.post.embeds import ImageEmbed, VideoEmbed
 from requests_oauthlib import OAuth1Session
 from pytumblr import TumblrRestClient
 
@@ -61,7 +62,10 @@ class TumblrAPI(TumblrRestClient):
 
 
     def get_notes_count_info(self, notes):
-        counter = dict()
+        counter = {
+            'like': 0,
+            'reblog': 0
+        }
         for note in notes:
             if note['type'] in counter:
                 counter[note['type']] += 1
@@ -73,7 +77,7 @@ class TumblrAPI(TumblrRestClient):
     def _get_post(self, post_id):
         username = self.info()['user']['name']
         blogname = '{}.tumblr.com'.format(username)
-        response = self.posts(blogname, id=post_id, notes_info=True, filter='text')
+        response = self.posts(blogname, id=post_id, notes_info=True)
         return response['posts'][0]
 
 
@@ -89,6 +93,8 @@ class TumblrAPI(TumblrRestClient):
         notes_info = self.get_notes_count_info(post['notes'])
         result['likes'] = notes_info['like']
         result['reblogs'] = notes_info['reblog']
+        result['embeds'] = []
+
 
         content = dict()
         if post['type'] == 'text':
@@ -104,13 +110,12 @@ class TumblrAPI(TumblrRestClient):
             content['description'] = post['description']
 
         elif post['type'] == 'photo':
-            content['photos'] = post['photos']
+            for photo in post['photos']:
+                result['embeds'].append(ImageEmbed(photo['original_size']['url']))
+
 
         elif post['type'] == 'video':
-            content['video_type'] = post['video_type']
-            content['caption'] = post['caption']
-            content['premalink_url'] = post['permalink_url']
-            content['video'] = post['video']
+            result['embeds'].append(VideoEmbed(post['permalink_url'], cover_url=post['thumbnail_url']))
 
         if 'title' in post:
             content['title'] = post['title']
