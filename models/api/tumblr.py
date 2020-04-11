@@ -73,7 +73,6 @@ class TumblrAPI(TumblrRestClient):
                 counter[note['type']] = 1
         return counter
 
-
     def _get_post(self, post_id):
         username = self.info()['user']['name']
         blogname = '{}.tumblr.com'.format(username)
@@ -81,47 +80,6 @@ class TumblrAPI(TumblrRestClient):
         return response['posts'][0]
 
 
-    def get_post(self, post_id):
-        post = self._get_post(post_id)
-        result = dict()
-
-        result['id'] = post['id_string']
-        result['created_at'] = post['timestamp']
-        result['hashtags'] = post['tags']
-        result['type'] = post['type']
-
-        notes_info = self.get_notes_count_info(post['notes'])
-        result['likes'] = notes_info['like']
-        result['reblogs'] = notes_info['reblog']
-        result['embeds'] = []
-
-
-        content = dict()
-        if post['type'] == 'text':
-            content['body'] = post['body']
-
-        elif post['type'] == 'chat':
-            content['body'] = post['body']
-
-        elif post['type'] == 'link':
-            content['link_image'] = post['link_image']
-            content['url'] = post['url']
-            content['excerpt'] = post['excerpt']
-            content['description'] = post['description']
-
-        elif post['type'] == 'photo':
-            for photo in post['photos']:
-                result['embeds'].append(ImageEmbed(photo['original_size']['url']))
-
-
-        elif post['type'] == 'video':
-            result['embeds'].append(VideoEmbed(post['permalink_url'], cover_url=post['thumbnail_url']))
-
-        if 'title' in post:
-            content['title'] = post['title']
-
-        result['content'] = content
-        return result
 
 if __name__ == '__main__':
     # /auth

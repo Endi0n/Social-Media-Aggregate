@@ -66,14 +66,37 @@ class Post:
 
     @classmethod
     def from_tumblr(cls, post):
-        id = post['id']
-        timestamp = post['created_at']
-        likes = post['likes']
-        shares = post['reblogs']
-        text = 'dummy text' # TODO
-        hashtags = post['hashtags']
-        embeds = post['embeds']
-        original = 'dummy original'
+        id = post['id_string']
+        timestamp = post['timestamp']
+        hashtags = post['tags']
+        likes = 0
+        shares = 0
+        text = None
+        embeds = []
+
+        for note in post['notes']:
+            if note['type'] == 'like':
+                likes += 1
+            elif note['type'] == 'reblog':
+                shares += 1
+
+        if post['type'] == 'text':
+            text = post['body']
+        elif post['type'] == 'chat':
+            text = post['body']
+        elif post['type'] == 'link':
+            text = post['url']
+            # post['link_image']
+            # post['url']
+            # post['excerpt']
+            # post['description']
+        elif post['type'] == 'photo':
+            for photo in post['photos']:
+                embeds.append(ImageEmbed(photo['original_size']['url']))
+        elif post['type'] == 'video':
+            embeds.append(VideoEmbed(post['permalink_url'], cover_url=post['thumbnail_url']))
+
+        original = post
         return Post(id, timestamp, likes, shares, text=text, hashtags=hashtags, embeds=embeds, original=original)
 
     @classmethod

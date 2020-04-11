@@ -46,5 +46,5 @@ def profile(tumblr_client):
 @tumblr.route('/post/<post_id>')
 @tumblr_required
 def view_post(tumblr_client, post_id):
-    return jsonify(Post.from_tumblr(tumblr_client.get_post(post_id)).as_dict())
+    return jsonify(Post.from_tumblr(tumblr_client._get_post(post_id)).as_dict())
 
