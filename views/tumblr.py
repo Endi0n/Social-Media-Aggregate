@@ -39,9 +39,14 @@ def auth_callback(user):
 @tumblr.route('/profile')
 @tumblr_required
 def profile(tumblr_client):
-    return jsonify(tumblr_client.info())
-
-
+    init = tumblr_client.info()
+    result = {
+        'blog_name': init['user']['name'],
+        'avatar': init['user']['blogs'][0]['avatar'][0],
+        'followers': init['user']['blogs'][0]['followers'],
+        'bio': init['user']['blogs'][0]['description']
+    }
+    return jsonify(result)
 
 @tumblr.route('/post/<post_id>')
 @tumblr_required
