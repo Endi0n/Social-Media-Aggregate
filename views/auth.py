@@ -84,35 +84,44 @@ def validate_email():
     return jsonify(message='Email validated successfully.')
 
 
-@auth.route("/reset_password", methods=['GET', 'POST'])
+@auth.route("/reset_password", methods=['POST'])
 def reset_password():
-    if request.method == 'POST':
-        email = utils.request.form_get('email')
+    email = utils.request.form_get('email')
 
-        user = User.query.filter_by(email=email).first()
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify(error='No account with specified email.'), 400
 
-        token = utils.jwt.generate_reset_password_token(user)
-        utils.mail.send_reset_password_email(email, token)
+    token = utils.jwt.generate_reset_password_token(user)
+    utils.mail.send_reset_password_email(email, token)
 
-        return jsonify(message='Email sent succesfully.')
+    return jsonify(message='Email sent succesfully.')
 
-    elif request.method == 'GET':
-        token_code = utils.request.args_get('token')
 
-        password = utils.request.form_get('password')
+@auth.route('/reset_password/callback', methods=['POST'])
+def reset_password_callback():
+    token_code = utils.request.form_get('token')
 
-        token = jwt.decode(token_code.encode(), app.config['SECRET_KEY'])
+    password = utils.request.form_get('password')
 
-        if token['request_type'] != 'reset_password':
-            return jsonify(error='Wrong token type.'), 400
+    if len(password) < 7:
+        return jsonify(error='Password must be at least 7 characters long.'), 400
 
-        user = User.query.get(token['user_id'])
-        if user.updated_at.timestamp() > int(token['iat']):
-            return jsonify(message='Token expired.'), 403
+    token = jwt.decode(token_code.encode(), app.config['SECRET_KEY'])
 
-        salt = bcrypt.gensalt()
-        hash = bcrypt.hashpw(password.encode(), salt).decode()
-        user.password = hash
-        db.session.commit()
+    if token['request_type'] != 'reset_password':
+        return jsonify(error='Wrong token type.'), 400
 
-        return jsonify(message='Password reset succesfully.')
+    user = User.query.get(token['user_id'])
+    if not user:
+        return jsonify(error='No account with specified email.'), 400
+
+    if user.updated_at.timestamp() > int(token['iat']):
+        return jsonify(message='Token expired.'), 403
+
+    salt = bcrypt.gensalt()
+    hash = bcrypt.hashpw(password.encode(), salt).decode()
+    user.password = hash
+    db.session.commit()
+
+    return jsonify(message='Password reset succesfully.')

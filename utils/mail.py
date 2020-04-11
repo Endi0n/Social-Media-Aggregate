@@ -16,7 +16,7 @@ def send_validate_email(email, token):
 def send_reset_password_email(email, token):
     msg = Message(
         'Reset your password for your Social Media Aggregate account!',
-        body=f"{app.config['BASE_DOMAIN']}/auth/reset_password?token={token}",
+        body=f"{app.config['BASE_DOMAIN']}/auth/reset_password?token={token}\nToken:{token}",
         recipients=[email]
     )
 
