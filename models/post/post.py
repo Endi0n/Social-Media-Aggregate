@@ -54,7 +54,7 @@ class Post:
         likes = 0  # TODO
         shares = 0  # TODO
         text = post['text']['text']
-        hashtags = re.findall('#([^ .])', text)
+        hashtags = re.findall('#([^ .]+)', text)
         mentions = None  # TODO
         embeds = []
 
