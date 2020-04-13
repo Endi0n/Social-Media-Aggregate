@@ -1,4 +1,4 @@
-from models import TumblrAPI, TumblrToken, Post
+from models import TumblrAPI, TumblrToken, Post, Profile
 from flask import Blueprint, redirect, request, jsonify, session
 from utils.auth import verified_user_required, tumblr_required
 from app import app, db
@@ -39,17 +39,10 @@ def auth_callback(user):
 @tumblr.route('/profile')
 @tumblr_required
 def profile(tumblr_client):
-    init = tumblr_client.info()
-    result = {
-        'blog_name': init['user']['name'],
-        'avatar': init['user']['blogs'][0]['avatar'][0],
-        'followers': init['user']['blogs'][0]['followers'],
-        'bio': init['user']['blogs'][0]['description']
-    }
-    return jsonify(result)
+    return jsonify(Profile.from_tumblr(tumblr_client.info()).as_dict())
+
 
 @tumblr.route('/post/<post_id>')
 @tumblr_required
 def view_post(tumblr_client, post_id):
     return jsonify(Post.from_tumblr(tumblr_client._get_post(post_id)).as_dict())
-

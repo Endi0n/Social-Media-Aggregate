@@ -1,4 +1,4 @@
-from models import LinkedInAPI, LinkedInToken, Post
+from models import LinkedInAPI, LinkedInToken, Post, Profile
 from flask import Blueprint, redirect, request, jsonify
 from utils.auth import verified_user_required, linkedin_required
 from app import app, db
@@ -31,14 +31,7 @@ def profile(linkedin_client):
     profile = linkedin_client.get_profile()
     followers = linkedin_client.get_followers()
 
-    res = {}
-    res['name'] = f"{list(profile['firstName']['localized'].values())[0]} {list(profile['lastName']['localized'].values())[0]}"
-    res['profile_picture'] = profile['profilePicture']['displayImage~']['elements'][-1]['identifiers'][0]['identifier']
-    res['followers'] = followers['firstDegreeSize']
-
-    res['original'] = profile
-
-    return jsonify(res)
+    return jsonify(Profile.from_linkedin(profile, followers).as_dict())
 
 
 @linkedin.route('/profile/companies')

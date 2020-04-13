@@ -38,16 +38,3 @@ class TwitterAPI(twitter.Api):
                              oauth_token,
                              oauth_token_secret,
                              tweet_mode='extended')
-
-    def get_profile(self):
-        profilestatus = self.VerifyCredentials().AsDict()
-        profile_json = {}
-        if 'name' in profilestatus:
-            profile_json['user_name'] = profilestatus['name']
-        if 'followers_count' in profilestatus:
-            profile_json['followers'] = profilestatus['followers_count']
-        if 'screen_name' in profilestatus:
-            profile_json['follow_name'] = profilestatus['screen_name']
-        if 'profile_image_url_https' in profilestatus:
-            profile_json['profile_image'] = profilestatus['profile_image_url_https']
-        return profile_json

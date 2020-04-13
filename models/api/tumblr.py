@@ -1,5 +1,4 @@
 from models.database import AppKey
-from models.post.embeds import ImageEmbed, VideoEmbed
 from requests_oauthlib import OAuth1Session
 from pytumblr import TumblrRestClient
 
@@ -59,7 +58,6 @@ class TumblrAPI(TumblrRestClient):
 
         tokens = oauth_session.fetch_access_token(TumblrAPI.ACCESS_TOKEN_URL)
         return tokens['oauth_token'], tokens['oauth_token_secret']
-
 
     def get_notes_count_info(self, notes):
         counter = {

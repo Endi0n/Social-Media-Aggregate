@@ -36,7 +36,7 @@ class LinkedInAPI:
     def get_profile(self):
         return json.loads(self.__linkedin.get(
             'https://api.linkedin.com/v2/me?projection=(id,firstName,lastName,profilePicture('
-            'displayImage~digitalmediaAsset:playableStreams))'
+            'displayImage~digitalmediaAsset:playableStreams),headline)'
         ).content.decode())
 
     def get_followers(self):

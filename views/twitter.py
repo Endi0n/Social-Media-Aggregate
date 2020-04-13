@@ -1,4 +1,4 @@
-from models import TwitterAPI, TwitterToken, Post
+from models import TwitterAPI, TwitterToken, Post, Profile
 from flask import Blueprint, redirect, request, jsonify, session
 from utils.auth import verified_user_required, twitter_required
 from app import db
@@ -32,7 +32,7 @@ def auth_callback(user):
 @twitter.route('/profile')
 @twitter_required
 def profile(twitter_client):
-    return jsonify(twitter_client.get_profile())
+    return jsonify(Profile.from_twitter(twitter_client.VerifyCredentials().AsDict()).as_dict())
 
 
 @twitter.route('/post/<post_id>')
