@@ -1,4 +1,4 @@
 from .api import *
-from .post.post import Post
+from .post.view import PostView
 from .profile import Profile
 from .database import *

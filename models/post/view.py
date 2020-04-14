@@ -5,7 +5,7 @@ import os
 import re
 
 
-class Post:
+class PostView:
 
     def __init__(self, id, timestamp, likes, shares, text=None, hashtags=None, mentions=None, embeds=None,
                  original=None):
@@ -62,7 +62,7 @@ class Post:
             for content in post['content']['contentEntities']:
                 embeds.append(ImageEmbed(content['entityLocation']))
 
-        return Post(id, timestamp, likes, shares, text=text, hashtags=hashtags, embeds=embeds, original=post)
+        return cls(id, timestamp, likes, shares, text=text, hashtags=hashtags, embeds=embeds, original=post)
 
     @classmethod
     def from_tumblr(cls, post):
@@ -97,7 +97,7 @@ class Post:
             embeds.append(VideoEmbed(post['permalink_url'], cover_url=post['thumbnail_url']))
 
         original = post
-        return Post(id, timestamp, likes, shares, text=text, hashtags=hashtags, embeds=embeds, original=original)
+        return cls(id, timestamp, likes, shares, text=text, hashtags=hashtags, embeds=embeds, original=original)
 
     @classmethod
     def from_twitter(cls, post):
@@ -124,7 +124,7 @@ class Post:
                     ))
 
         if 'quoted_status' in post:
-            embeds.append(QuoteEmbed(Post.from_twitter(post['quoted_status'])))
+            embeds.append(QuoteEmbed(PostView.from_twitter(post['quoted_status'])))
 
-        return Post(id, timestamp, likes, shares, text=text, hashtags=hashtags, mentions=mentions, embeds=embeds,
-                    original=post)
+        return cls(id, timestamp, likes, shares, text=text, hashtags=hashtags, mentions=mentions, embeds=embeds,
+                        original=post)
