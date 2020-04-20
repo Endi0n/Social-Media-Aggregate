@@ -76,6 +76,11 @@ class TumblrAPI(TumblrRestClient):
         blogname = '{}.tumblr.com'.format(username)
         response = self.posts(blogname, id=post_id, notes_info=True)
         return response['posts'][0]
+    
+    def _get_blogname(self):
+        username = self.info()['user']['name']
+        blogname = '{}.tumblr.com'.format(username)
+        return blogname
 
 
 
