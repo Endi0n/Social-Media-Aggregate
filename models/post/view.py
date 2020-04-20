@@ -103,11 +103,18 @@ class PostView:
     def from_twitter(cls, post):
         id = post['id_str']
         timestamp = datetime.strptime(post['created_at'], '%a %b %d %H:%M:%S %z %Y').timestamp()
-        likes = post['favorite_count']
-        shares = post['retweet_count']
-        text = post['full_text']  # TODO: remove trailing link
+        likes = post.get('favorite_count', 0)
+        shares = post.get('retweet_count', 0)
+
+        text = post.get('full_text', '')
+        urls = post['urls']
+        for url in urls:
+            text = text.replace(url['url'], url['expanded_url'])
+        text = re.sub("https?://t.co/[a-zA-Z0-9]+$", '', text).strip()
+
         hashtags = [tag['text'] for tag in post['hashtags']]
-        mentions = [UserMention(user['id'], name=user['name'], tag=user['tag']) for user in post['user_mentions']]
+        mentions = [UserMention(user['id'], name=user['name'], tag=user['screen_name'])
+                    for user in post['user_mentions']]
         embeds = []
 
         if 'media' in post:
@@ -127,4 +134,4 @@ class PostView:
             embeds.append(QuoteEmbed(PostView.from_twitter(post['quoted_status'])))
 
         return cls(id, timestamp, likes, shares, text=text, hashtags=hashtags, mentions=mentions, embeds=embeds,
-                        original=post)
+                   original=post)

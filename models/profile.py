@@ -48,12 +48,12 @@ class Profile:
     @classmethod
     def from_twitter(cls, profile):
         id = profile['screen_name']
-        followers = profile['followers_count']
+        followers = profile.get('followers_count', None)
         name = profile['name']
         profile_picture = None
         if 'profilePicture' in profile:
             profile_picture = profile['profilePicture']['displayImage~']['elements'][-1]['identifiers'][0]['identifier']
-        bio = profile.get('desctiption', None)
+        bio = profile.get('description', None)
 
         return cls(id, followers, name=name, bio=bio, profile_picture=profile_picture, original=profile)
 

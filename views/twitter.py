@@ -39,3 +39,17 @@ def profile(twitter_client):
 @twitter_required
 def view_post(twitter_client, post_id):
     return jsonify(PostView.from_twitter(twitter_client.GetStatus(post_id).AsDict()).as_dict())
+
+
+@twitter.route('/profile/posts')
+@twitter_required
+def get_user_posts(twitter_client):
+    posts = {'posts': []}
+    max_id = int(request.args['last_id'])-1 if 'last_id' in request.args else None
+    count = request.args.get('count', 5)
+    user_id = twitter_client.VerifyCredentials().AsDict()['id']
+
+    user_timeline = twitter_client.GetUserTimeline(user_id, count=count, max_id=max_id)
+    posts['posts'] = [PostView.from_twitter(post.AsDict()).as_dict() for post in user_timeline]
+
+    return jsonify(posts)
