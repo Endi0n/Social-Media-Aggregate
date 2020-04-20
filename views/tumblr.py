@@ -44,14 +44,15 @@ def profile(tumblr_client):
 @tumblr.route('/profile/posts')
 @tumblr_required
 def get_all_posts(tumblr_client):
-	p = tumblr_client.info()
-	total_nr_of_posts = p["user"]["blogs"][0]["posts"]
-	unfiltered_posts = tumblr_client.posts(tumblr_client._get_blogname, limit=total_nr_of_posts)
-	posts = {'posts': []}
-	for i in range(0,total_nr_of_posts):
-		posts['posts'].append(PostView.from_tumblr(unfiltered_posts['posts'][i]).as_dict())
+    p = tumblr_client.info()
+    total_nr_of_posts = p["user"]["blogs"][0]["posts"]
+    response = tumblr_client.posts(tumblr_client._get_blogname(), notes_info=True, limit=total_nr_of_posts)
+    unfiltered_posts = response['posts']
+    posts = []
+    for post in unfiltered_posts:
+        posts.append(PostView.from_tumblr(post).as_dict())
 
-	return posts
+    return jsonify({'posts': posts})
 
 @tumblr.route('/post/<post_id>')
 @tumblr_required
