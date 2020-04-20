@@ -44,9 +44,9 @@ def profile(tumblr_client):
 @tumblr.route('/profile/posts')
 @tumblr_required
 def get_all_posts(tumblr_client):
-	p = client.info()
+	p = tumblr_client.info()
 	total_nr_of_posts = p["user"]["blogs"][0]["posts"]
-	unfiltered_posts = client.posts(tumblr_client._get_blogname, limit=total_nr_of_posts)
+	unfiltered_posts = tumblr_client.posts(tumblr_client._get_blogname, limit=total_nr_of_posts)
 	posts = {'posts': []}
 	for i in range(0,total_nr_of_posts):
 		posts['posts'].append(PostView.from_tumblr(unfiltered_posts['posts'][i]).as_dict())
