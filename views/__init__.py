@@ -4,6 +4,7 @@ from .linkedin import linkedin
 from .twitter import twitter
 from .tumblr import tumblr
 from .auth import auth
+from .common import *
 from app import app
 
 app.register_blueprint(linkedin)
