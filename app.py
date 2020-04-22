@@ -9,7 +9,9 @@ import os
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY')
 
-CORS(app)
+# TODO:
+CORS(app, origins=[r'https?://localhost(:\d+)?', r'https?://.+\.github\.io', r'https?://sma-a4\.herokuapp\.com'],
+     supports_credentials=True)
 
 login_manager = LoginManager(app)
 
