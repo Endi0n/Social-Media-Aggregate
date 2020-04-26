@@ -74,11 +74,12 @@ class PostView:
         text = None
         embeds = []
 
-        for note in post['notes']:
-            if note['type'] == 'like':
-                likes += 1
-            elif note['type'] == 'reblog':
-                shares += 1
+        if 'notes' in post:
+            for note in post['notes']:
+                if note['type'] == 'like':
+                    likes += 1
+                elif note['type'] == 'reblog':
+                    shares += 1
 
         if post['type'] == 'text':
             text = post['body']
