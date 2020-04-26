@@ -1,4 +1,4 @@
-from models import LinkedInAPI, LinkedInToken, PostView, Profile
+from models import LinkedInAPI, LinkedInToken, PostView, PostDraft, Profile
 from flask import Blueprint, redirect, request, jsonify
 from utils.auth import verified_user_required, linkedin_required
 from app import app, db
@@ -65,3 +65,10 @@ def get_all_posts2(linkedin_client):
 @linkedin_required
 def view_post(linkedin_client, post_id):
     return jsonify(PostView.from_linkedin(linkedin_client.get_post(post_id)).as_dict())
+
+
+@linkedin.route('/post', methods=['POST'])
+@linkedin_required
+def post(linkedin_client):
+    linkedin_client.post(PostDraft(request))
+    return jsonify(message='Posted successfully.'), 201

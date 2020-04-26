@@ -16,7 +16,7 @@ class LinkedInAPI:
         # Step 1
         authorization_base_url = 'https://www.linkedin.com/oauth/v2/authorization'
         linkedin = OAuth2Session(LinkedInAPI.CLIENT_KEY, redirect_uri=callback_url,
-                                 scope=['r_liteprofile', 'r_organization_social', 'rw_organization_admin'])
+                                 scope=['r_liteprofile', 'r_organization_social', 'w_organization_social', 'rw_organization_admin'])
 
         authorization_url, state = linkedin.authorization_url(authorization_base_url)
         return authorization_url
@@ -54,9 +54,8 @@ class LinkedInAPI:
 
     def get_self_posts(self, start, count):
         # TODO:
-        organization_urn = self.get_companies()['elements'][0]['organizationalTarget']
         return json.loads(self.__linkedin.get(
-            f'https://api.linkedin.com/v2/shares?q=owners&owners={organization_urn}&sharesPerOwner=1000'
+            f'https://api.linkedin.com/v2/shares?q=owners&owners={self.get_organization_urn()}&sharesPerOwner=1000'
             f'&start={start}&count={count}'
         ).content.decode())
 
@@ -70,6 +69,63 @@ class LinkedInAPI:
 
     def get_post(self, post_id):
         return json.loads(self.__linkedin.get('https://api.linkedin.com/v2/shares/' + post_id).content.decode())
+
+    def get_organization_urn(self):
+        return self.get_companies()['elements'][0]['organizationalTarget']
+
+    def upload_file(self, file):
+        #Step 1
+        data = json.loads(self.__linkedin.post(
+            f'https://api.linkedin.com/v2/assets?action=registerUpload',
+            json={
+                "registerUploadRequest": {
+                    "owner": self.get_organization_urn(),
+                    "recipes": [
+                        "urn:li:digitalmediaRecipe:feedshare-image"
+                    ],
+                    "serviceRelationships": [
+                        {
+                            "identifier": "urn:li:userGeneratedContent",
+                            "relationshipType": "OWNER"
+                        }
+                    ],
+                    "supportedUploadMechanism": [
+                        "SYNCHRONOUS_UPLOAD"
+                    ]
+                }
+            }
+        ).content.decode())
+
+        urn = data['value']['asset']
+        upload_url = data['value']['uploadMechanism']['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest']['uploadUrl']
+
+        #Step 2
+        data = json.loads(self.__linkedin.put(upload_url, files=file).content.decode())
+        return urn
+
+
+    def post(self, post_draft):
+        files = [self.upload_file(file) for file in post_draft.files]
+
+        data = json.loads(self.__linkedin.post(
+            f'https://api.linkedin.com/v2/shares',
+            json={
+                "distribution": {
+                    "linkedInDistributionTarget": {}
+                },
+                "owner": self.get_organization_urn(),
+                "text": {
+                    "text": post_draft.text
+                },
+                "content": {
+                    "contentEntities": [{"entity": file} for file in files],
+                    "title": "Test Share with Content title",
+                    "landingPageUrl": "https://www.linkedin.com/",
+                    "shareMediaCategory": "IMAGE"
+                }
+            }
+        ).content.decode())
+        pass
 
 
 if __name__ == '__main__':
