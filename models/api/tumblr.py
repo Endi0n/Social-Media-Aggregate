@@ -82,22 +82,3 @@ class TumblrAPI(TumblrRestClient):
         blogname = '{}.tumblr.com'.format(username)
         return blogname
 
-
-
-if __name__ == '__main__':
-    # /auth
-    url, fetch_response = TumblrAPI.generate_auth_url('https://github.com/ceofil')
-    
-    # insert fetch_response.get('oauth_token') and fetch_response.get('oauth_token_secret')
-
-
-    # /auth/callback
-    red = input('go here {} and paste redirect: \n'.format(url))  #request.url
-
-    # get fetch_response from data base
-
-    access_token = TumblrAPI.generate_auth_token(red, fetch_response)
-
-    client = TumblrAPI.client(access_token.get('oauth_token'), access_token.get('oauth_token_secret'))
-
-    print(client.info())
