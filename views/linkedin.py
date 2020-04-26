@@ -3,6 +3,7 @@ from flask import Blueprint, redirect, request, jsonify
 from utils.auth import verified_user_required, linkedin_required
 from app import app, db
 from datetime import datetime
+import utils.request
 
 linkedin = Blueprint(__name__, __name__, url_prefix='/linkedin')
 CALLBACK_URL = app.config['BASE_DOMAIN'] + '/linkedin/auth/callback'
@@ -45,7 +46,10 @@ def get_companies(linkedin_client):
 def get_all_posts(linkedin_client):
     posts = {'posts': []}
 
-    for post in linkedin_client.get_self_posts()['elements']:
+    start = utils.request.args_get('start', 0)
+    count = utils.request.args_get('count', 20)
+
+    for post in linkedin_client.get_self_posts(start, count)['elements']:
         posts['posts'].append(PostView.from_linkedin(post).as_dict())
 
     return posts

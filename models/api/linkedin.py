@@ -52,11 +52,12 @@ class LinkedInAPI:
                 'https://api.linkedin.com/v2/organizationalEntityAcls?q=roleAssignee&role=ADMINISTRATOR'
             ).content.decode())
 
-    def get_self_posts(self):
+    def get_self_posts(self, start, count):
         # TODO:
         organization_urn = self.get_companies()['elements'][0]['organizationalTarget']
         return json.loads(self.__linkedin.get(
-            f'https://api.linkedin.com/v2/shares?q=owners&owners={organization_urn}&sharesPerOwner=100'
+            f'https://api.linkedin.com/v2/shares?q=owners&owners={organization_urn}&sharesPerOwner=1000'
+            f'&start={start}&count={count}'
         ).content.decode())
 
     def get_self_posts2(self):
