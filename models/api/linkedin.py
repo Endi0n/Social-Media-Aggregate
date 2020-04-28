@@ -1,5 +1,6 @@
 from requests_oauthlib import OAuth2Session
 from models.database import AppKey
+import requests
 import urllib
 import json
 
@@ -74,7 +75,7 @@ class LinkedInAPI:
     def get_organization_urn(self):
         return self.get_companies()['elements'][0]['organizationalTarget']
 
-    def upload_file(self, file):
+    def upload_file(self, file=None, file_raw=None):
         # Step 1
         data = json.loads(self.__linkedin.post(
             f'https://api.linkedin.com/v2/assets?action=registerUpload',
@@ -103,11 +104,14 @@ class LinkedInAPI:
 
         # Step 2
         data = self.__linkedin.put(upload_url, headers={'Content-Type': 'image/jpeg,image/png,image/gif'},
-                                   data=file.read())
+                                   data=file_raw or file.read())
         return urn
 
     def post(self, post_draft):
         files = [self.upload_file(file) for file in post_draft.files]
+
+        files_from_url = [requests.get(file) for file in post_draft.files_url]
+        files.extend([self.upload_file(file_raw=file) for file in files_from_url])
 
         request_json = {
             'author': self.get_organization_urn(),
@@ -115,7 +119,7 @@ class LinkedInAPI:
 
             'specificContent': {
                 'com.linkedin.ugc.ShareContent': {
-                    'shareCommentary': {'text': post_draft.text or ''},
+                    'shareCommentary': {'text': post_draft.text},
                     "shareMediaCategory": "NONE"
                 }
             },
@@ -125,13 +129,13 @@ class LinkedInAPI:
             }
         }
 
-        if post_draft.files:
+        if files:
             request_json['specificContent']['com.linkedin.ugc.ShareContent'].update({
                 'shareMediaCategory': 'IMAGE',
                 'media': [{'status': 'READY', 'media': file} for file in files]
             })
 
-        data = json.loads(self.__linkedin.post(
+        json.loads(self.__linkedin.post(
             f'https://api.linkedin.com/v2/ugcPosts',
             json=request_json
         ).content.decode())
