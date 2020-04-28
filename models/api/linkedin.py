@@ -1,12 +1,12 @@
 from requests_oauthlib import OAuth2Session
-from models.database import AppKey
+from models.database import Platform
 import requests
 import urllib
 import json
 
 
 class LinkedInAPI:
-    APP_KEY = AppKey.query.filter_by(platform='LINKEDIN').one()
+    APP_KEY = Platform.query.filter_by(platform='LINKEDIN').one()
     CLIENT_KEY = APP_KEY.client_key
     CLIENT_SECRET = APP_KEY.client_secret
 

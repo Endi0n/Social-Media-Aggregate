@@ -1,10 +1,10 @@
-from models.database import AppKey
+from models.database import Platform
 from requests_oauthlib import OAuth1Session
 from pytumblr import TumblrRestClient
 
 
 class TumblrAPI(TumblrRestClient):
-    APP_KEY = AppKey.query.filter_by(platform='TUMBLR').one()
+    APP_KEY = Platform.query.filter_by(platform='TUMBLR').one()
     CLIENT_KEY = APP_KEY.client_key
     CLIENT_SECRET = APP_KEY.client_secret
 

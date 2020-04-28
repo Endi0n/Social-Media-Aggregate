@@ -1,5 +1,7 @@
 from flask_login import UserMixin
+from sqlalchemy import Index
 from app import db
+
 
 
 class User(db.Model, UserMixin):
@@ -77,10 +79,22 @@ class TwitterToken(db.Model):
         self.token_secret = token_secret
 
 
-class AppKey(db.Model):
-    __tablename__ = 'app_key'
+class Platform(db.Model):
+    __tablename__ = 'platform'
 
     id = db.Column(db.Integer, nullable=False, primary_key=True)
     platform = db.Column(db.String(10), nullable=False, unique=True)
     client_key = db.Column(db.String(50), nullable=False)
     client_secret = db.Column(db.String(50), nullable=False)
+
+
+class FollowersStat(db.Model):
+    __tablename__ = 'followers_stat'
+
+    id = db.Column(db.Integer, nullable=False, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    platform_id = db.Column(db.Integer, db.ForeignKey('platform.id'), nullable=False)
+    timestamp = db.Column(db.DateTime, nullable=False)
+    followers = db.Column(db.Integer, nullable=False)
+
+    __table_args__ = (Index('ix_followers_stat_user_id_platform_id_timestamp', 'user_id', 'platform_id', 'timestamp'),)

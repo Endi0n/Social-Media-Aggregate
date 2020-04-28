@@ -1,10 +1,10 @@
 from requests_oauthlib import OAuth1Session
-from models.database import AppKey
+from models.database import Platform
 import twitter
 
 
 class TwitterAPI(twitter.Api):
-    APP_KEY = AppKey.query.filter_by(platform='TWITTER').one()
+    APP_KEY = Platform.query.filter_by(platform='TWITTER').one()
     CLIENT_KEY = APP_KEY.client_key
     CLIENT_SECRET = APP_KEY.client_secret
 
