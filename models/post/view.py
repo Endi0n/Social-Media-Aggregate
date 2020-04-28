@@ -7,27 +7,29 @@ import re
 
 class PostView:
 
-    def __init__(self, id, timestamp, likes, shares, text=None, hashtags=None, mentions=None, embeds=None,
-                 original=None):
+    def __init__(self, original, id, timestamp, likes, shares, comments_count, text=None, hashtags=None, mentions=None,
+                 embeds=None):
+        self.__original = original
+
         self.__id = id
         self.__timestamp = timestamp
 
         self.__likes = likes
         self.__shares = shares
+        self.__comments_count = comments_count
 
         self.__text = text
         self.__hashtags = hashtags
         self.__mentions = mentions
         self.__embeds = embeds
 
-        self.__original = original
-
     def as_dict(self):
         post = {
             'id': self.__id,
             'created_at': self.__timestamp,
             'likes': self.__likes,
-            'shares': self.__shares
+            'shares': self.__shares,
+            'comments_count': self.__comments_count
         }
 
         if self.__text:
@@ -53,6 +55,7 @@ class PostView:
         timestamp = post['created']['time'] // 1e3
         likes = 0  # TODO
         shares = 0  # TODO
+        comments_count = 0  # TODO
         text = post['text']['text']
         hashtags = re.findall('#([^ .]+)', text)
         mentions = None  # TODO
@@ -62,15 +65,16 @@ class PostView:
             for content in post['content']['contentEntities']:
                 embeds.append(ImageEmbed(content['entityLocation']))
 
-        return cls(id, timestamp, likes, shares, text=text, hashtags=hashtags, embeds=embeds, original=post)
+        return cls(post, id, timestamp, likes, shares, comments_count, text=text, hashtags=hashtags, embeds=embeds)
 
     @classmethod
     def from_tumblr(cls, post):
         id = post['id_string']
         timestamp = post['timestamp']
         hashtags = post['tags']
-        likes = 0
-        shares = 0
+        likes = 0  # TODO
+        shares = 0  # TODO
+        comments_count = 0  # TODO
         text = None
         embeds = []
 
@@ -97,8 +101,7 @@ class PostView:
         elif post['type'] == 'video':
             embeds.append(VideoEmbed(post['permalink_url'], cover_url=post['thumbnail_url']))
 
-        original = post
-        return cls(id, timestamp, likes, shares, text=text, hashtags=hashtags, embeds=embeds, original=original)
+        return cls(post, id, timestamp, likes, shares, comments_count, text=text, hashtags=hashtags, embeds=embeds)
 
     @classmethod
     def from_twitter(cls, post):
@@ -106,6 +109,7 @@ class PostView:
         timestamp = datetime.strptime(post['created_at'], '%a %b %d %H:%M:%S %z %Y').timestamp()
         likes = post.get('favorite_count', 0)
         shares = post.get('retweet_count', 0)
+        comments_count = 0  # TODO
 
         text = post.get('full_text', '')
         urls = post['urls']
@@ -134,5 +138,5 @@ class PostView:
         if 'quoted_status' in post:
             embeds.append(QuoteEmbed(PostView.from_twitter(post['quoted_status'])))
 
-        return cls(id, timestamp, likes, shares, text=text, hashtags=hashtags, mentions=mentions, embeds=embeds,
-                   original=post)
+        return cls(post, id, timestamp, likes, shares, comments_count, text=text, hashtags=hashtags, mentions=mentions,
+                   embeds=embeds)
