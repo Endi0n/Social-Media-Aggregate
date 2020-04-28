@@ -38,3 +38,10 @@ class TwitterAPI(twitter.Api):
                              oauth_token,
                              oauth_token_secret,
                              tweet_mode='extended')
+
+    def post(self, post_draft):
+        # Dirty fix because python-twitter is a dull library
+        for file in post_draft.files:
+            file.mode = 'rb'
+
+        self.PostUpdate(status=post_draft.text, media=(post_draft.files + post_draft.files_url))

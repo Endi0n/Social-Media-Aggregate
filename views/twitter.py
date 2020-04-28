@@ -1,4 +1,4 @@
-from models import TwitterAPI, TwitterToken, PostView, Profile
+from models import TwitterAPI, TwitterToken, PostView, Profile, PostDraft
 from flask import Blueprint, redirect, request, jsonify, session
 from utils.auth import verified_user_required, twitter_required
 from app import db
@@ -36,7 +36,7 @@ def profile(twitter_client):
     return jsonify(Profile.from_twitter(twitter_client.VerifyCredentials().AsDict()).as_dict())
 
 
-@twitter.route('/view_post/<post_id>')
+@twitter.route('/post/<post_id>')
 @twitter_required
 def view_post(twitter_client, post_id):
     return jsonify(PostView.from_twitter(twitter_client.GetStatus(post_id).AsDict()).as_dict())
@@ -55,33 +55,9 @@ def get_user_posts(twitter_client):
 
     return jsonify(posts)
 
+
 @twitter.route('/post', methods=['POST'])
 @twitter_required
 def post(twitter_client):
-    userName = twitter_client.VerifyCredentials().AsDict()['id']
-    type = request.form.get('type')
-    text = request.form.get('text', '')
-
-    result = ['nothing happened']
-
-    if type == 'text':
-        result = twitter_client.PostUpdate(status=text)
-    else:
-        if 'content' in request.files:
-            file = request.files['content']
-            filepath = '.temp{}'.format(file.filename)
-            file.save(filepath)
-
-            if type == 'photo':
-                result = twitter_client.PostUpdate(status=text, media=[filepath])
-            elif type == 'video':
-                result = twitter_client.PostUpdate(status=text, media=[filepath])
-
-            os.remove(filepath)
-        elif 'content' in request.form:
-            link = request.form.get('content')
-            if type == 'photo':
-                result = twitter_client.PostUpdate(status=text, media=link)
-            elif type == 'video':
-                result = twitter_client.PostUpdate(status=text, media=link)
-        return jsonify(result)
+    twitter_client.post(PostDraft(request))
+    return jsonify(message='Posted successfully.'), 201
