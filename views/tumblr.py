@@ -3,7 +3,7 @@ from flask import Blueprint, redirect, request, jsonify, session
 from utils.auth import verified_user_required, tumblr_required
 from app import app, db
 import os
-import json
+import uuid
 
 tumblr = Blueprint(__name__, __name__, url_prefix='/tumblr')
 CALLBACK_URL = app.config['BASE_DOMAIN'] + '/tumblr/auth/callback'
@@ -77,7 +77,9 @@ def post(tumblr_client):
     else:
         if 'content' in request.files:
             file = request.files['content']
-            filepath = '.temp{}'.format(file.filename)
+            temp_dir = '/tmp'
+            temp_name = "{}_{}".format(str(uuid.uuid1()), file.filename)
+            filepath = os.path.join(temp_dir, temp_name)
             file.save(filepath)
 
             if type == 'photo':
