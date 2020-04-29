@@ -1,5 +1,5 @@
 from models import LinkedInAPI, LinkedInToken, PostView, PostDraft, Profile
-from flask import Blueprint, redirect, request, jsonify
+from flask import Blueprint, session, redirect, request, jsonify
 from utils.auth import verified_user_required, linkedin_required
 from app import app, db
 from datetime import datetime
@@ -12,6 +12,10 @@ CALLBACK_URL = app.config['BASE_DOMAIN'] + '/linkedin/auth/callback'
 @linkedin.route('/auth')
 @verified_user_required
 def auth(user):
+    redirect_url = request.args.get('redirect_url', None)
+    if redirect_url:
+        session['redirect_url'] = redirect_url
+
     return redirect(LinkedInAPI.generate_auth_url(CALLBACK_URL))
 
 
@@ -23,6 +27,12 @@ def auth_callback(user):
                                  datetime.fromtimestamp(token['expires_at']))
     db.session.add(token_record)
     db.session.commit()
+
+    if 'redirect_url' in session:
+        redirect_url = session['redirect_url']
+        session.pop('redirect_url')
+        return redirect(redirect_url)
+
     return jsonify(message='Authentication succeeded.'), 200
 
 

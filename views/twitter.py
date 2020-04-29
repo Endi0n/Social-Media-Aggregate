@@ -11,7 +11,13 @@ twitter = Blueprint(__name__, __name__, url_prefix='/twitter')
 @verified_user_required
 def auth(user):
     oauth_token, oauth_token_secret = TwitterAPI.generate_auth_req_token()
+
     session['twitter_req_auth_token'], session['twitter_req_auth_token_secret'] = oauth_token, oauth_token_secret
+
+    redirect_url = request.args.get('redirect_url', None)
+    if redirect_url:
+        session['redirect_url'] = redirect_url
+
     return redirect(TwitterAPI.generate_auth_url(oauth_token))
 
 
@@ -27,6 +33,12 @@ def auth_callback(user):
     token_record = TwitterToken(user, oauth_token, oauth_token_secret)
     db.session.add(token_record)
     db.session.commit()
+
+    if 'redirect_url' in session:
+        redirect_url = session['redirect_url']
+        session.pop('redirect_url')
+        return redirect(redirect_url)
+
     return jsonify(message='Authentication succeeded.'), 200
 
 

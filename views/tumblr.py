@@ -13,7 +13,12 @@ CALLBACK_URL = app.config['BASE_DOMAIN'] + '/tumblr/auth/callback'
 @verified_user_required
 def auth(user):
     oauth_token, oauth_token_secret = TumblrAPI.generate_auth_req_token()
+
     session['tumblr_req_auth_token'], session['tumblr_req_auth_token_secret'] = oauth_token, oauth_token_secret
+
+    redirect_url = request.args.get('redirect_url', None)
+    if redirect_url:
+        session['redirect_url'] = redirect_url
 
     return redirect(TumblrAPI.generate_auth_url(oauth_token))
 
@@ -35,6 +40,11 @@ def auth_callback(user):
     db.session.add(token_record)
     db.session.commit()
 
+    if 'redirect_url' in session:
+        redirect_url = session['redirect_url']
+        session.pop('redirect_url')
+        return redirect(redirect_url)
+
     return jsonify(message='Authentication succeeded.'), 200
 
 
@@ -42,6 +52,7 @@ def auth_callback(user):
 @tumblr_required
 def profile(tumblr_client):
     return jsonify(Profile.from_tumblr(tumblr_client.info()).as_dict())
+
 
 @tumblr.route('/profile/posts')
 @tumblr_required
@@ -55,6 +66,7 @@ def get_all_posts(tumblr_client):
         posts.append(PostView.from_tumblr(post).as_dict())
 
     return jsonify({'posts': posts})
+
 
 @tumblr.route('/view_post/<post_id>')
 @tumblr_required
