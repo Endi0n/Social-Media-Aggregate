@@ -2,7 +2,6 @@ from models import TwitterAPI, TwitterToken, PostView, Profile, PostDraft
 from flask import Blueprint, redirect, request, jsonify, session
 from utils.auth import verified_user_required, twitter_required
 from app import db
-import os
 
 twitter = Blueprint(__name__, __name__, url_prefix='/twitter')
 

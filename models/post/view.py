@@ -3,6 +3,8 @@ from .embeds import *
 from datetime import datetime
 import os
 import re
+import requests
+from bs4 import BeautifulSoup
 
 
 class PostView:
@@ -111,7 +113,12 @@ class PostView:
         timestamp = datetime.strptime(post['created_at'], '%a %b %d %H:%M:%S %z %Y').timestamp()
         likes = post.get('favorite_count', 0)
         shares = post.get('retweet_count', 0)
-        comments_count = 0  # TODO
+
+        screen_name = post['user']['screen_name']
+        html = requests.get(f'https://twitter.com/{screen_name}/status/{id}')
+        soup = BeautifulSoup(html.text, 'lxml')
+        comments = soup.find_all('span', attrs={'class': 'ProfileTweet-actionCountForAria'})[0].contents[0].split()[0]
+        comments_count = int(comments)
 
         text = post.get('full_text', '')
         urls = post['urls']
