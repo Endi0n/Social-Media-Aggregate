@@ -84,8 +84,8 @@ class PostView:
                     likes += 1
                 elif note['type'] == 'reblog':
                     shares += 1
-                elif note['type'] == 'comment':
-                    comments_count +=1
+                elif note['type'] == 'reply':
+                    comments_count += 1
 
         if post['type'] == 'text':
             text = post['body']
