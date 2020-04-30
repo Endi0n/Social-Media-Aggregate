@@ -52,12 +52,19 @@ class PostView:
         return post
 
     @classmethod
-    def from_linkedin(cls, post):
+    def from_linkedin(cls, post, stats):
         id = post['id']
         timestamp = post['created']['time'] // 1e3
-        likes = 0  # TODO
-        shares = 0  # TODO
-        comments_count = 0  # TODO
+
+        likes = 0
+        shares = 0
+        comments_count = 0
+
+        if stats['elements']:
+            likes = stats['elements'][0]['totalShareStatistics']['likeCount']
+            shares = stats['elements'][0]['totalShareStatistics']['commentCount']
+            comments_count = stats['elements'][0]['totalShareStatistics']['commentCount']
+
         text = post['text']['text']
         hashtags = re.findall('#([^ .]+)', text)
         mentions = None  # TODO
@@ -65,7 +72,10 @@ class PostView:
 
         if 'content' in post:
             for content in post['content']['contentEntities']:
-                embeds.append(ImageEmbed(content['entityLocation']))
+                if 'entityLocation' in content:
+                    embeds.append(ImageEmbed(content['entityLocation']))
+                else:
+                    pass
 
         return cls(post, id, timestamp, likes, shares, comments_count, text=text, hashtags=hashtags, embeds=embeds)
 

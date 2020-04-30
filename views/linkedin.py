@@ -60,7 +60,7 @@ def get_all_posts(linkedin_client):
     count = utils.request.args_get('count', 20)
 
     for post in linkedin_client.get_self_posts(start, count)['elements']:
-        posts['posts'].append(PostView.from_linkedin(post).as_dict())
+        posts['posts'].append(PostView.from_linkedin(post, linkedin_client.get_post_stats(post['id'])).as_dict())
 
     return posts
 
@@ -74,7 +74,8 @@ def get_all_posts2(linkedin_client):
 @linkedin.route('/post/<post_id>')
 @linkedin_required
 def view_post(linkedin_client, post_id):
-    return jsonify(PostView.from_linkedin(linkedin_client.get_post(post_id)).as_dict())
+    return jsonify(
+        PostView.from_linkedin(linkedin_client.get_post(post_id), linkedin_client.get_post_stats(post_id)).as_dict())
 
 
 @linkedin.route('/post', methods=['POST'])

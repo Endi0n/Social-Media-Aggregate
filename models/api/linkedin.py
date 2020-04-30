@@ -72,6 +72,14 @@ class LinkedInAPI:
     def get_post(self, post_id):
         return json.loads(self.__linkedin.get('https://api.linkedin.com/v2/shares/' + post_id).content.decode())
 
+    def get_post_stats(self, post_id):
+        organization_urn = self.get_companies()['elements'][0]['organizationalTarget']
+
+        return json.loads(self.__linkedin.get(
+            'https://api.linkedin.com/v2/organizationalEntityShareStatistics?q=organizationalEntity'
+            f'&organizationalEntity={organization_urn}&shares[0]=urn:li:share:{post_id}'
+        ).content.decode())
+
     def get_organization_urn(self):
         return self.get_companies()['elements'][0]['organizationalTarget']
 
