@@ -72,9 +72,9 @@ class PostView:
         id = post['id_string']
         timestamp = post['timestamp']
         hashtags = post['tags']
-        likes = 0  # TODO
-        shares = 0  # TODO
-        comments_count = 0  # TODO
+        likes = 0 
+        shares = 0 
+        comments_count = 0 
         text = None
         embeds = []
 
@@ -84,6 +84,8 @@ class PostView:
                     likes += 1
                 elif note['type'] == 'reblog':
                     shares += 1
+                elif note['type'] == 'comment':
+                    comments_count +=1
 
         if post['type'] == 'text':
             text = post['body']
