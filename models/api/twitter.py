@@ -3,7 +3,7 @@ from models.post import *
 from models import Profile, PostView, UserMention
 from .platform import PlatformAPI
 from requests_oauthlib import OAuth1Session
-from datetime import datetime
+from datetime import datetime, date
 from bs4 import BeautifulSoup
 import requests
 import re
@@ -64,12 +64,33 @@ class TwitterAPI(PlatformAPI, twitter.Api):
         return self._get_post_view(self.GetStatus(post_id).AsDict())
 
     def get_posts(self):
-        # max_id = int(request.args['last_id']) - 1 if 'last_id' in request.args else None
-        count = 5  # request.args.get('count', 5)
+        posts = []
+        max_id = None
+        out_of_week = False
         user_id = self.VerifyCredentials().AsDict()['id']
 
-        user_timeline = self.GetUserTimeline(user_id, count=count)  # , max_id=max_id)
-        return {'posts': [self._get_post_view(post.AsDict()).as_dict() for post in user_timeline]}
+        while not out_of_week:
+            user_timeline_posts = [self._get_post_view(post.AsDict()) for post in
+                                   self.GetUserTimeline(user_id, count=200, max_id=max_id)]
+            if len(user_timeline_posts) == 0:
+                break
+
+            today_week_no = date.today().isocalendar()[1]
+
+            for i in range(len(user_timeline_posts)):
+                post = user_timeline_posts[i]
+                post_date_time = datetime.fromtimestamp(post['created_at'])
+
+                if today_week_no != post_date_time.isocalendar()[1]:
+                    out_of_week = True
+                    break
+
+                posts.append(post)
+
+            if len(posts) > 0:
+                max_id = int(posts[-1]['id']) - 1
+
+        return {'posts': posts}
 
     def post(self, post_draft):
         # Dirty fix because python-twitter is a dull library
@@ -86,7 +107,7 @@ class TwitterAPI(PlatformAPI, twitter.Api):
         shares = post.get('retweet_count', 0)
 
         screen_name = post['user']['screen_name']
-        html = requests.get(f'https://twitter.com/{screen_name}/status/{id}')
+        html = requests.get(f'https://twitter.com/{screen_name}/status/{post_id}')
         soup = BeautifulSoup(html.text, 'lxml')
         comments = soup.find_all('span', attrs={'class': 'ProfileTweet-actionCountForAria'})[0].contents[0].split()[0]
         comments_count = int(comments)
@@ -119,4 +140,4 @@ class TwitterAPI(PlatformAPI, twitter.Api):
             embeds.append(QuoteEmbed(TwitterAPI._get_post_view(post['quoted_status'])))
 
         return PostView(post, post_id, timestamp, likes, shares, comments_count, text=text, hashtags=hashtags,
-                        mentions=mentions, embeds=embeds)
+                        mentions=mentions, embeds=embeds).as_dict()
