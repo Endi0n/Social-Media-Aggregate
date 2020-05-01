@@ -12,7 +12,7 @@ class PlatformAPI(ABC):
     def get_posts(self):
         raise NotImplementedError
 
-    def post(self):
+    def post(self, post_draft):
         raise NotImplementedError
 
     def delete_post(self, post_id):
