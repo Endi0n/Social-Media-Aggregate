@@ -19,6 +19,7 @@ def add_platform(platform_name, platform_cls, platform_auth_validator):
 
     add_route(platform_view, '/profile', platform_auth_validator(platform_cls.profile))
     add_route(platform_view, '/profile/posts', platform_auth_validator(platform_cls.get_posts))
+    add_route(platform_view, '/profile/posts/stats', platform_auth_validator(platform_cls.posts_stats))
 
     add_route(platform_view, '/post/<post_id>', platform_auth_validator(platform_cls.post_endpoint),
               methods=['GET', 'DELETE'])

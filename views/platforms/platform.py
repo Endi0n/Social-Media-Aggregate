@@ -25,3 +25,7 @@ class PlatformView:
     def post(client):
         client.post(PostDraft(request))
         return jsonify(message='Posted successfully.'), 201
+
+    @staticmethod
+    def posts_stats(client):
+        return jsonify(client.posts_stats())
