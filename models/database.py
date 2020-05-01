@@ -3,7 +3,6 @@ from sqlalchemy import Index
 from app import db
 
 
-
 class User(db.Model, UserMixin):
     __tablename__ = 'user'
 
@@ -88,13 +87,14 @@ class Platform(db.Model):
     client_secret = db.Column(db.String(50), nullable=False)
 
 
-class FollowersStat(db.Model):
-    __tablename__ = 'followers_stat'
+class FollowersCount(db.Model):
+    __tablename__ = 'followers_count'
 
     id = db.Column(db.Integer, nullable=False, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     platform_id = db.Column(db.Integer, db.ForeignKey('platform.id'), nullable=False)
-    timestamp = db.Column(db.DateTime, nullable=False)
+    timestamp = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
     followers = db.Column(db.Integer, nullable=False)
+    automatic = db.Column(db.Boolean, nullable=False, default=False)
 
     __table_args__ = (Index('ix_followers_stat_user_id_platform_id_timestamp', 'user_id', 'platform_id', 'timestamp'),)

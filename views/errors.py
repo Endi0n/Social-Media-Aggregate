@@ -19,6 +19,11 @@ if os.getenv('REWRITE_ERROR_OUTPUT'):
         return jsonify(error='Internal server error.'), 500
 
 
+    @app.errorhandler(NotImplementedError)
+    def not_implemented_error_handler(e):
+        return jsonify(error='Method not implemented.'), 501
+
+
     @app.errorhandler(KeyError)
     def missing_parameter_error_handler(e):
         app.logger.error(str(e))

@@ -1,9 +1,16 @@
-from requests_oauthlib import OAuth1Session
 from models.database import Platform
+from models.post import *
+from models import Profile, PostView, UserMention
+from .platform import PlatformAPI
+from requests_oauthlib import OAuth1Session
+from datetime import datetime
+from bs4 import BeautifulSoup
+import requests
+import re
 import twitter
 
 
-class TwitterAPI(twitter.Api):
+class TwitterAPI(PlatformAPI, twitter.Api):
     APP_KEY = Platform.query.filter_by(platform='TWITTER').one()
     CLIENT_KEY = APP_KEY.client_key
     CLIENT_SECRET = APP_KEY.client_secret
@@ -39,9 +46,77 @@ class TwitterAPI(twitter.Api):
                              oauth_token_secret,
                              tweet_mode='extended')
 
+    def get_profile(self):
+        profile = self.VerifyCredentials().AsDict()
+
+        profile_id = profile['screen_name']
+        followers = profile.get('followers_count', None)
+        name = profile['name']
+        bio = profile.get('description', None)
+
+        profile_picture = None
+        if 'profilePicture' in profile:
+            profile_picture = profile['profilePicture']['displayImage~']['elements'][-1]['identifiers'][0]['identifier']
+
+        return Profile(profile, profile_id, followers, name=name, bio=bio, profile_picture=profile_picture).as_dict()
+
+    def get_post(self, post_id):
+        return self._get_post_view(self.GetStatus(post_id).AsDict())
+
+    def get_posts(self):
+        # max_id = int(request.args['last_id']) - 1 if 'last_id' in request.args else None
+        count = 5  # request.args.get('count', 5)
+        user_id = self.VerifyCredentials().AsDict()['id']
+
+        user_timeline = self.GetUserTimeline(user_id, count=count)  # , max_id=max_id)
+        return {'posts': [self._get_post_view(post.AsDict()).as_dict() for post in user_timeline]}
+
     def post(self, post_draft):
         # Dirty fix because python-twitter is a dull library
         for file in post_draft.files:
             file.mode = 'rb'
 
         self.PostUpdate(status=post_draft.text, media=(post_draft.files + post_draft.files_url))
+
+    @staticmethod
+    def _get_post_view(post):
+        post_id = post['id_str']
+        timestamp = datetime.strptime(post['created_at'], '%a %b %d %H:%M:%S %z %Y').timestamp()
+        likes = post.get('favorite_count', 0)
+        shares = post.get('retweet_count', 0)
+
+        screen_name = post['user']['screen_name']
+        html = requests.get(f'https://twitter.com/{screen_name}/status/{id}')
+        soup = BeautifulSoup(html.text, 'lxml')
+        comments = soup.find_all('span', attrs={'class': 'ProfileTweet-actionCountForAria'})[0].contents[0].split()[0]
+        comments_count = int(comments)
+
+        text = post.get('full_text', '')
+        urls = post['urls']
+        for url in urls:
+            text = text.replace(url['url'], url['expanded_url'])
+        text = re.sub("https?://t.co/[a-zA-Z0-9]+$", '', text).strip()
+
+        hashtags = [tag['text'] for tag in post['hashtags']]
+        mentions = [UserMention(user['id'], name=user['name'], tag=user['screen_name'])
+                    for user in post['user_mentions']]
+        embeds = []
+
+        if 'media' in post:
+            for media in post['media']:
+                if media['type'] == 'photo':
+                    embeds.append(ImageEmbed(media['media_url_https']))
+
+                elif media['type'] == 'video':
+                    embeds.append(VideoEmbed(
+                        max(media['video_info']['variants'],
+                            key=lambda x: x['bitrate'] if 'bitrate' in x else -1)['url'],
+                        cover_url=media['media_url_https'],
+                        duration=media['video_info'].get('duration_millis', None)
+                    ))
+
+        if 'quoted_status' in post:
+            embeds.append(QuoteEmbed(TwitterAPI._get_post_view(post['quoted_status'])))
+
+        return PostView(post, post_id, timestamp, likes, shares, comments_count, text=text, hashtags=hashtags,
+                        mentions=mentions, embeds=embeds)

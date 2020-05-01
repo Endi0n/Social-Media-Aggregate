@@ -27,9 +27,9 @@ def signup():
         return jsonify(error='There is already an account registered with this email.'), 409
 
     salt = bcrypt.gensalt()
-    hash = bcrypt.hashpw(password.encode(), salt).decode()
+    pwd_hash = bcrypt.hashpw(password.encode(), salt).decode()
 
-    user = User(email, hash, name)
+    user = User(email, pwd_hash, name)
     db.session.add(user)
     db.session.commit()
 
@@ -120,8 +120,8 @@ def reset_password_callback():
         return jsonify(message='Token expired.'), 403
 
     salt = bcrypt.gensalt()
-    hash = bcrypt.hashpw(password.encode(), salt).decode()
-    user.password = hash
+    pwd_hash = bcrypt.hashpw(password.encode(), salt).decode()
+    user.password = pwd_hash
     db.session.commit()
 
     return jsonify(message='Password reset succesfully.')

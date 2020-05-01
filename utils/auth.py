@@ -1,5 +1,5 @@
 from functools import wraps
-from flask import jsonify
+from flask import jsonify, request, session, redirect
 from flask_login import current_user
 from app import login_manager
 from models.api import *
@@ -17,7 +17,8 @@ def get_authenticated_user():
     return current_user
 
 
-def _verified_user_check(func):
+def verified_user_check(func):
+    @wraps(func)
     def decorator(*args, **kwargs):
         if not current_user.is_authenticated:
             return jsonify(error='Unauthenticated.'), 401
@@ -46,7 +47,7 @@ def verified_user_required(func):
 
 def linkedin_required(func):
     @wraps(func)
-    @_verified_user_check
+    @verified_user_check
     def decorator(*args, **kwargs):
         if not current_user.linkedin_token:
             return jsonify(error='Unauthenticated for LinkedIn.'), 401
@@ -59,7 +60,7 @@ def linkedin_required(func):
 
 def twitter_required(func):
     @wraps(func)
-    @_verified_user_check
+    @verified_user_check
     def decorator(*args, **kwargs):
         if not current_user.twitter_token:
             return jsonify(error='Unauthenticated for Twitter.'), 401
@@ -72,7 +73,7 @@ def twitter_required(func):
 
 def tumblr_required(func):
     @wraps(func)
-    @_verified_user_check
+    @verified_user_check
     def decorator(*args, **kwargs):
         if not current_user.tumblr_token:
             return jsonify(error='Unauthenticated for Tumblr.'), 401
@@ -81,3 +82,29 @@ def tumblr_required(func):
         return func(tumblr_client, *args, **kwargs)
 
     return decorator
+
+
+def platform_auth(func):
+    @wraps(func)
+    def decorator(*args, **kwargs):
+        redirect_url = request.args.get('redirect_url', None)
+        if redirect_url:
+            session['redirect_url'] = redirect_url
+        return func(*args, **kwargs)
+
+    return verified_user_check(decorator)
+
+
+def platform_callback(func):
+    @wraps(func)
+    def decorator(*args, **kwargs):
+        res = func(*args, **kwargs)
+
+        if 'redirect_url' in session:
+            redirect_url = session['redirect_url']
+            session.pop('redirect_url')
+            return redirect(redirect_url)
+
+        return res
+
+    return verified_user_required(decorator)
