@@ -73,6 +73,11 @@ def get_all_posts(tumblr_client):
 def view_post(tumblr_client, post_id):
     return jsonify(PostView.from_tumblr(tumblr_client._get_post(post_id)).as_dict())
 
+@tumblr.route('/delete_post/<post_id>')
+@tumblr_required
+def delete_post(tumblr_client,post_id):
+    #todo immediately
+    
 
 @tumblr.route('/post', methods=['POST'])
 @tumblr_required
