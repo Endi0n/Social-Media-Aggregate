@@ -76,8 +76,9 @@ def view_post(tumblr_client, post_id):
 @tumblr.route('/delete_post/<post_id>')
 @tumblr_required
 def delete_post(tumblr_client,post_id):
-    #todo immediately
-    
+    blogName = tumblr_client._get_blogname()
+    tumblr_client.delete_post(blogName,post_id)
+    return jsonify(message='Post deleted sucessfully.'), 200
 
 @tumblr.route('/post', methods=['POST'])
 @tumblr_required
