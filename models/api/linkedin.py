@@ -183,7 +183,7 @@ class LinkedInAPI(PlatformAPI):
             f'https://api.linkedin.com/v2/assets?action=registerUpload',
             json={
                 "registerUploadRequest": {
-                    "owner": self.get_organization_urn(),
+                    "owner": self._get_organization_urn(),
                     "recipes": [
                         "urn:li:digitalmediaRecipe:feedshare-image"
                     ],
