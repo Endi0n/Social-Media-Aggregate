@@ -6,6 +6,7 @@ from pytumblr import TumblrRestClient
 import uuid
 import os
 
+
 class TumblrAPI(PlatformAPI, TumblrRestClient):
     APP_KEY = Platform.query.filter_by(platform='TUMBLR').one()
     CLIENT_KEY = APP_KEY.client_key
@@ -148,7 +149,7 @@ class TumblrAPI(PlatformAPI, TumblrRestClient):
                 file_type = file.headers['Content-Type'].split('/')[0]
                 if file_type not in files:
                     files[file_type] = []
-                temp_dir = '/temp'
+                temp_dir = '/tmp'
                 temp_name = "{}_{}".format(str(uuid.uuid1()), file.filename)
                 filepath = os.path.join(temp_dir, temp_name)
                 file.save(filepath)
@@ -158,7 +159,6 @@ class TumblrAPI(PlatformAPI, TumblrRestClient):
                 files[file_type].append(filepath)
 
             if 'image' in files:
-                print('here')
                 result = self.create_photo(blogName, data=files['image'], caption=post_draft.text)
             elif 'video' in files:
                 result = self.create_video(blogName, data=files['video'], caption=post_draft.text)
