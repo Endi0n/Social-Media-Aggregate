@@ -3,7 +3,8 @@ from models import Profile, PostView, ImageEmbed, VideoEmbed
 from .platform import PlatformAPI
 from requests_oauthlib import OAuth1Session
 from pytumblr import TumblrRestClient
-
+import uuid
+import os
 
 class TumblrAPI(PlatformAPI, TumblrRestClient):
     APP_KEY = Platform.query.filter_by(platform='TUMBLR').one()
@@ -137,3 +138,47 @@ class TumblrAPI(PlatformAPI, TumblrRestClient):
         username = self.info()['user']['name']
         blogname = '{}.tumblr.com'.format(username)
         return blogname
+
+    def post(self, post_draft):
+        blogName = self._get_blogname()
+
+        if post_draft.files:
+            files = dict()
+            for file in post_draft.files:
+                file_type = file.headers['Content-Type'].split('/')[0]
+                if file_type not in files:
+                    files[file_type] = []
+                temp_dir = '/temp'
+                temp_name = "{}_{}".format(str(uuid.uuid1()), file.filename)
+                filepath = os.path.join(temp_dir, temp_name)
+                file.save(filepath)
+
+                print(filepath, file_type)
+
+                files[file_type].append(filepath)
+
+            if 'image' in files:
+                print('here')
+                result = self.create_photo(blogName, data=files['image'], caption=post_draft.text)
+            elif 'video' in files:
+                result = self.create_video(blogName, data=files['video'], caption=post_draft.text)
+
+            for _type in files:
+                for filepath in files[_type]:
+                    os.remove(filepath)
+
+        elif post_draft.files_url:
+            urls = dict()
+            for url in post_draft.files_url:
+                file_type = 'photo'  # TODO  get file type from url
+
+                if file_type not in urls:
+                    urls[file_type] = []
+                urls[file_type].append(url)
+
+            if 'photo' in urls:
+                result = self.create_photo(blogName, source=urls['photo'][0], caption=post_draft.text)
+            elif 'video' in urls:
+                result = self.create_video(blogName, embed=urls['video'][0], caption=post_draft.text)
+
+        # TODO  check result
