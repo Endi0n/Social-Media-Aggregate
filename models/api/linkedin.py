@@ -100,6 +100,9 @@ class LinkedInAPI(PlatformAPI):
             json=request_json
         ).content.decode())
 
+    def delete_post(self, post_id):
+        self._client.delete('https://api.linkedin.com/v2/shares/' + post_id)
+
     def _get_profile(self):
         return json.loads(self._client.get(
             'https://api.linkedin.com/v2/me?projection=(id,firstName,lastName,profilePicture('
