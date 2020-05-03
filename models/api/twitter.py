@@ -63,6 +63,10 @@ class TwitterAPI(PlatformAPI, twitter.Api):
     def get_post(self, post_id):
         return self._get_post_view(self.GetStatus(post_id).AsDict())
 
+    def delete_post(self, post_id):
+        self.DestroyStatus(post_id)
+        return jsonify(message='Post deleted successfully'), 200
+
     def get_posts(self):
         posts = []
         max_id = None
@@ -141,3 +145,4 @@ class TwitterAPI(PlatformAPI, twitter.Api):
 
         return PostView(post, post_id, timestamp, likes, shares, comments_count, text=text, hashtags=hashtags,
                         mentions=mentions, embeds=embeds).as_dict()
+
