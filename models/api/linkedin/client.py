@@ -1,7 +1,8 @@
 from requests_oauthlib import OAuth2Session
 from models import Profile, PostView, ImageEmbed
 from models.database import Platform
-from .platform import PlatformAPI
+from models.api.platform import PlatformAPI
+from .error import LinkedInError
 import requests
 import urllib
 import json
@@ -9,9 +10,9 @@ import re
 
 
 class LinkedInAPI(PlatformAPI):
-    APP_KEY = Platform.query.filter_by(name='LINKEDIN').one()
-    CLIENT_KEY = APP_KEY.client_key
-    CLIENT_SECRET = APP_KEY.client_secret
+    PLATFORM = Platform.query.filter_by(name='LINKEDIN').one()
+    CLIENT_KEY = PLATFORM.client_key
+    CLIENT_SECRET = PLATFORM.client_secret
 
     @staticmethod
     def generate_auth_url(callback_url):
@@ -110,7 +111,11 @@ class LinkedInAPI(PlatformAPI):
         ).content.decode())
 
     def _get_followers(self):
-        organization_urn = self._get_companies()['elements'][0]['organizationalTarget']
+        companies = self._get_companies()['elements']
+        if len(companies) < 1:
+            raise LinkedInError(404, 'User has no company.')
+
+        organization_urn = companies[0]['organizationalTarget']
         return json.loads(
             self._client.get(
                 f'https://api.linkedin.com/v2/networkSizes/{organization_urn}?edgeType=CompanyFollowedByMember'

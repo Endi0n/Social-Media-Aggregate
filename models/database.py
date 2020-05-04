@@ -98,3 +98,9 @@ class FollowersCount(db.Model):
     automatic = db.Column(db.Boolean, nullable=False, default=False)
 
     __table_args__ = (Index('ix_followers_stat_user_id_platform_id_timestamp', 'user_id', 'platform_id', 'timestamp'),)
+
+    def __init__(self, user_id, platform_id, followers, automatic):
+        self.user_id = user_id
+        self.platform_id = platform_id
+        self.followers = followers
+        self.automatic = automatic

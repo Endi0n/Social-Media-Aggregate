@@ -1,5 +1,8 @@
 from flask import jsonify, request
 from models import PostDraft
+from models.database import FollowersCount
+import utils.auth as auth
+from app import db
 
 
 class PlatformView:
@@ -30,6 +33,10 @@ class PlatformView:
     @staticmethod
     def post(client):
         client.post(PostDraft(request))
+        followers_row = FollowersCount(auth.get_authenticated_user().id, client.PLATFORM.id,
+                                       client.get_profile()['followers'], False)
+        db.session.add(followers_row)
+        db.session.commit()
         return jsonify(message='Posted successfully.'), 201
 
     @staticmethod

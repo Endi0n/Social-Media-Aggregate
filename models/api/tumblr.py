@@ -8,9 +8,9 @@ import os
 
 
 class TumblrAPI(PlatformAPI, TumblrRestClient):
-    APP_KEY = Platform.query.filter_by(name='TUMBLR').one()
-    CLIENT_KEY = APP_KEY.client_key
-    CLIENT_SECRET = APP_KEY.client_secret
+    PLATFROM = Platform.query.filter_by(name='TUMBLR').one()
+    CLIENT_KEY = PLATFROM.client_key
+    CLIENT_SECRET = PLATFROM.client_secret
 
     REQUEST_TOKEN_URL = 'https://www.tumblr.com/oauth/request_token'
     AUTHORIZE_BASE_URL = 'https://www.tumblr.com/oauth/authorize'

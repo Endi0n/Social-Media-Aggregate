@@ -11,9 +11,9 @@ import twitter
 
 
 class TwitterAPI(PlatformAPI, twitter.Api):
-    APP_KEY = Platform.query.filter_by(name='TWITTER').one()
-    CLIENT_KEY = APP_KEY.client_key
-    CLIENT_SECRET = APP_KEY.client_secret
+    PLATFORM = Platform.query.filter_by(name='TWITTER').one()
+    CLIENT_KEY = PLATFORM.client_key
+    CLIENT_SECRET = PLATFORM.client_secret
 
     @staticmethod
     def generate_auth_req_token():
