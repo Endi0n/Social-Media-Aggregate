@@ -65,7 +65,6 @@ class TwitterAPI(PlatformAPI, twitter.Api):
 
     def delete_post(self, post_id):
         self.DestroyStatus(post_id)
-        return jsonify(message='Post deleted successfully'), 200
 
     def get_posts(self):
         posts = []
