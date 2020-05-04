@@ -50,7 +50,7 @@ class TwitterAPI(PlatformAPI, twitter.Api):
         profile = self.VerifyCredentials().AsDict()
 
         profile_id = profile['screen_name']
-        followers = profile.get('followers_count', None)
+        followers = profile.get('followers_count', 0)
         name = profile['name']
         bio = profile.get('description', None)
 
