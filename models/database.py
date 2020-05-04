@@ -82,7 +82,7 @@ class Platform(db.Model):
     __tablename__ = 'platform'
 
     id = db.Column(db.Integer, nullable=False, primary_key=True)
-    platform = db.Column(db.String(10), nullable=False, unique=True)
+    name = db.Column(db.String(10), nullable=False, unique=True)
     client_key = db.Column(db.String(50), nullable=False)
     client_secret = db.Column(db.String(50), nullable=False)
 

@@ -9,7 +9,7 @@ import re
 
 
 class LinkedInAPI(PlatformAPI):
-    APP_KEY = Platform.query.filter_by(platform='LINKEDIN').one()
+    APP_KEY = Platform.query.filter_by(name='LINKEDIN').one()
     CLIENT_KEY = APP_KEY.client_key
     CLIENT_SECRET = APP_KEY.client_secret
 

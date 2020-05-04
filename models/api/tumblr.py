@@ -8,7 +8,7 @@ import os
 
 
 class TumblrAPI(PlatformAPI, TumblrRestClient):
-    APP_KEY = Platform.query.filter_by(platform='TUMBLR').one()
+    APP_KEY = Platform.query.filter_by(name='TUMBLR').one()
     CLIENT_KEY = APP_KEY.client_key
     CLIENT_SECRET = APP_KEY.client_secret
 
