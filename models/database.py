@@ -35,7 +35,7 @@ class LinkedInToken(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True, unique=True)
     token = db.Column(db.String(1000), nullable=False)
     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
     expires_at = db.Column(db.DateTime)
@@ -52,7 +52,7 @@ class TumblrToken(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True, unique=True)
     token = db.Column(db.String(1000), nullable=False)
     token_secret = db.Column(db.String(1000), nullable=False)
 
@@ -68,7 +68,7 @@ class TwitterToken(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True, unique=True)
     token = db.Column(db.String(1000), nullable=False)
     token_secret = db.Column(db.String(1000), nullable=False)
 

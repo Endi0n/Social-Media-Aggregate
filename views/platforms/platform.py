@@ -3,6 +3,12 @@ from models import PostDraft
 
 
 class PlatformView:
+    __ROUTES__ = []
+
+    @classmethod
+    def route(cls, route, func):
+        cls.__ROUTES__.append((route, func))
+        return func
 
     @staticmethod
     def profile(client):
