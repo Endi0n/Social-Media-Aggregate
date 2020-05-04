@@ -104,3 +104,36 @@ class FollowersCount(db.Model):
         self.platform_id = platform_id
         self.followers = followers
         self.automatic = automatic
+
+
+class Stats(db.Model):
+    __tablename__ = 'stats'
+
+    id = db.Column(db.Integer, nullable=False, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    platform_id = db.Column(db.Integer, db.ForeignKey('platform.id'), nullable=False)
+    timestamp = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
+
+    comments_avg = db.Column(db.Float, nullable=False)
+    comments_sum = db.Column(db.Integer, nullable=False)
+
+    likes_avg = db.Column(db.Float, nullable=False)
+    likes_sum = db.Column(db.Integer, nullable=False)
+
+    shares_avg = db.Column(db.Float, nullable=False)
+    shares_sum = db.Column(db.Integer, nullable=False)
+
+    __table_args__ = (Index('ix_stats_user_id_platform_id_timestamp', 'user_id', 'platform_id', 'timestamp'),)
+
+    def __init__(self, user_id, platform_id, comments_avg, comments_sum, likes_avg, likes_sum, shares_avg, shares_sum):
+        self.user_id = user_id
+        self.platform_id = platform_id
+
+        self.comments_avg = comments_avg
+        self.comments_sum = comments_sum
+
+        self.likes_avg = likes_avg
+        self.likes_sum = likes_sum
+
+        self.shares_avg = shares_avg
+        self.shares_sum = shares_sum
