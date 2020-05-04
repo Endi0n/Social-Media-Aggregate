@@ -49,3 +49,6 @@ class PlatformAPI(ABC):
         }
 
         return stats
+
+    def post_ranking(self):
+        return {'posts': sorted(self.get_posts()['posts'], key=lambda post: post['likes'], reverse=True)}
