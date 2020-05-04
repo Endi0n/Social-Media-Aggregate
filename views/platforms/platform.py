@@ -44,5 +44,5 @@ class PlatformView:
         return jsonify(client.posts_stats())
 
     @staticmethod
-    def post_ranking(client):
-        return jsonify(client.post_ranking())
+    def get_posts_ranked(client):
+        return jsonify(client.get_posts_ranked())
