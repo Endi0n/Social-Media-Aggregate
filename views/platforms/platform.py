@@ -1,8 +1,9 @@
 from flask import jsonify, request
 from models import PostDraft
-from models.database import FollowersCount
+from models.database import FollowersCount, Stats
 import utils.auth as auth
 from app import db
+from datetime import datetime
 
 
 class PlatformView:
@@ -46,3 +47,37 @@ class PlatformView:
     @staticmethod
     def get_posts_ranked(client):
         return jsonify(client.get_posts_ranked())
+
+    @staticmethod
+    def get_followers_stats(platform_cls):
+        date_begin = datetime.fromtimestamp(request.args.get('date_begin', 0))
+
+        date_end = None
+        if 'date_end' in request.args:
+            date_end = datetime.fromtimestamp(request.args['date_end'])
+        else:
+            date_end = datetime.utcnow()
+
+        followers_count = FollowersCount.query.filter_by(
+            user_id=auth.get_authenticated_user().id,
+            platform_id=platform_cls.PLATFORM.id
+        ).filter(FollowersCount.timestamp.between(date_begin, date_end)).order_by(FollowersCount.timestamp.desc()).all()
+
+        return jsonify(followers_count=list(map(FollowersCount.as_dict, followers_count)))
+
+    @staticmethod
+    def get_general_stats(platform_cls):
+        date_begin = datetime.fromtimestamp(request.args.get('date_begin', 0))
+
+        date_end = None
+        if 'date_end' in request.args:
+            date_end = datetime.fromtimestamp(request.args['date_end'])
+        else:
+            date_end = datetime.utcnow()
+
+        entries = Stats.query.filter_by(
+            user_id=auth.get_authenticated_user().id,
+            platform_id=platform_cls.PLATFORM.id
+        ).filter(Stats.timestamp.between(date_begin, date_end)).order_by(Stats.timestamp.desc()).all()
+
+        return jsonify(entries=list(map(Stats.as_dict, entries)))

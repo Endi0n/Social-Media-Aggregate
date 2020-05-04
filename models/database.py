@@ -105,6 +105,13 @@ class FollowersCount(db.Model):
         self.followers = followers
         self.automatic = automatic
 
+    def as_dict(self):
+        return {
+            'timestamp': self.timestamp.timestamp(),
+            'followers': self.followers,
+            'automatic': self.automatic
+        }
+
 
 class Stats(db.Model):
     __tablename__ = 'stats'
@@ -137,3 +144,17 @@ class Stats(db.Model):
 
         self.shares_avg = shares_avg
         self.shares_sum = shares_sum
+
+    def as_dict(self):
+        return {
+            'timestamp': self.timestamp.timestamp(),
+
+            'comments_avg': self.comments_avg,
+            'comments_sum': self.comments_sum,
+
+            'likes_avg': self.likes_avg,
+            'likes_sum': self.likes_sum,
+
+            'shares_avg': self.shares_avg,
+            'shares_sum': self.shares_sum
+        }
