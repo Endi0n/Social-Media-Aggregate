@@ -81,14 +81,15 @@ class TumblrAPI(PlatformAPI, TumblrRestClient):
 
     def get_posts(self):
         profile = self.info()
+        
+        current_week_no = date.today().isocalendar()[1]
         total_nr_of_posts = profile["user"]["blogs"][0]["posts"]
-
-        response = self.posts(self._get_blogname(), notes_info=True, limit=total_nr_of_posts)
-        unfiltered_posts = response['posts']
-
+        response = client.dashboard(limit=total_nr_of_posts)
         posts = []
-        for post in unfiltered_posts:
-            posts.append(self._get_post_view(post))
+        for post in response['posts']:
+            post_date_time = datetime.fromtimestamp(post['timestamp'])
+            if post_date_time.isocalendar()[1] == current_week_no:
+                posts.append(post)
 
         return {'posts': posts}
 
