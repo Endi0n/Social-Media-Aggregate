@@ -83,7 +83,7 @@ class TumblrAPI(PlatformAPI, TumblrRestClient):
     profile = self.info()
     current_week_no = date.today().isocalendar()[1]
     total_nr_of_posts = profile["user"]["blogs"][0]["posts"]
-    response = client.dashboard(limit=total_nr_of_posts)
+    response = self.dashboard(limit=total_nr_of_posts)
     posts = []
     for post in response['posts']:
         post_date_time = datetime.fromtimestamp(post['timestamp'])
