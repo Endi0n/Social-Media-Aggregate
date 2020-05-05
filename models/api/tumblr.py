@@ -5,6 +5,7 @@ from requests_oauthlib import OAuth1Session
 from pytumblr import TumblrRestClient
 import uuid
 import os
+from datetime import datetime, date
 
 
 class TumblrAPI(PlatformAPI, TumblrRestClient):
@@ -83,14 +84,14 @@ class TumblrAPI(PlatformAPI, TumblrRestClient):
         profile = self.info()
         current_week_no = date.today().isocalendar()[1]
         total_nr_of_posts = profile["user"]["blogs"][0]["posts"]
-        response = self.dashboard(limit=total_nr_of_posts)
+        response = self.posts(self._get_blogname(), limit=total_nr_of_posts)
         posts = []
-        for post in response['posts']:
-            post_date_time = datetime.fromtimestamp(post['timestamp'])
-            if post_date_time.isocalendar()[1] == current_week_no:
-                posts.append(post)
+        if 'posts' in response:
+            for post in response['posts']:
+                post_date_time = datetime.fromtimestamp(post['timestamp'])
+                if post_date_time.isocalendar()[1] == current_week_no:
+                    posts.append(self._get_post_view(post))
         return {'posts': posts}
-
 
     @staticmethod
     def _get_post_view(post):
