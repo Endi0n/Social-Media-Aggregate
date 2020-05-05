@@ -80,16 +80,16 @@ class TumblrAPI(PlatformAPI, TumblrRestClient):
         TumblrRestClient.delete_post(self, self._get_blogname(), post_id)
 
     def get_posts(self):
-    profile = self.info()
-    current_week_no = date.today().isocalendar()[1]
-    total_nr_of_posts = profile["user"]["blogs"][0]["posts"]
-    response = self.dashboard(limit=total_nr_of_posts)
-    posts = []
-    for post in response['posts']:
-        post_date_time = datetime.fromtimestamp(post['timestamp'])
-        if post_date_time.isocalendar()[1] == current_week_no:
-            posts.append(post)
-    return {'posts': posts}
+        profile = self.info()
+        current_week_no = date.today().isocalendar()[1]
+        total_nr_of_posts = profile["user"]["blogs"][0]["posts"]
+        response = self.dashboard(limit=total_nr_of_posts)
+        posts = []
+        for post in response['posts']:
+            post_date_time = datetime.fromtimestamp(post['timestamp'])
+            if post_date_time.isocalendar()[1] == current_week_no:
+                posts.append(post)
+        return {'posts': posts}
 
 
     @staticmethod
