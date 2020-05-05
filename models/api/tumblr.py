@@ -7,7 +7,6 @@ import uuid
 import os
 from datetime import datetime, date
 
-
 class TumblrAPI(PlatformAPI, TumblrRestClient):
     PLATFROM = Platform.query.filter_by(name='TUMBLR').one()
     CLIENT_KEY = PLATFROM.client_key
@@ -127,7 +126,11 @@ class TumblrAPI(PlatformAPI, TumblrRestClient):
             for photo in post['photos']:
                 embeds.append(ImageEmbed(photo['original_size']['url']))
         elif post['type'] == 'video':
-            embeds.append(VideoEmbed(post['permalink_url'], cover_url=post['thumbnail_url']))
+            if 'permalink_url' in post:
+                video_url = post['permalink_url']
+            else:
+                video_url = post['video_url']
+            embeds.append(VideoEmbed(video_url, cover_url=post['thumbnail_url']))
 
         return PostView(post, post_id, timestamp, likes, shares, comments_count, text=text, hashtags=hashtags,
                         embeds=embeds).as_dict()
