@@ -4,6 +4,8 @@ import oauthlib.oauth2 as oauth2
 import jwt.exceptions
 from smtplib import SMTPException
 from sqlalchemy.exc import SQLAlchemyError
+from twitter.error import TwitterError
+from models.api.linkedin import LinkedInError
 import utils.mail
 from app import app
 import os
@@ -59,3 +61,11 @@ if os.getenv('REWRITE_ERROR_OUTPUT'):
         app.logger.error(e.message)
         utils.mail.send_internal_error_email(e.message)
         return jsonify(error='Internal server error.'), 500
+
+    @app.errorhandler(TwitterError)
+    def twitter_error(e):
+        return jsonify(e.message), 500
+
+    @app.errorhandler(TwitterError)
+    def twitter_error(e):
+        return jsonify(error=e.message), 500
