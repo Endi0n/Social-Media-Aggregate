@@ -8,9 +8,9 @@ import os
 from datetime import datetime, date
 
 class TumblrAPI(PlatformAPI, TumblrRestClient):
-    PLATFROM = Platform.query.filter_by(name='TUMBLR').one()
-    CLIENT_KEY = PLATFROM.client_key
-    CLIENT_SECRET = PLATFROM.client_secret
+    PLATFORM = Platform.query.filter_by(name='TUMBLR').one()
+    CLIENT_KEY = PLATFORM.client_key
+    CLIENT_SECRET = PLATFORM.client_secret
 
     REQUEST_TOKEN_URL = 'https://www.tumblr.com/oauth/request_token'
     AUTHORIZE_BASE_URL = 'https://www.tumblr.com/oauth/authorize'
