@@ -7,6 +7,7 @@ import uuid
 import os
 from datetime import datetime, date
 
+
 class TumblrAPI(PlatformAPI, TumblrRestClient):
     PLATFORM = Platform.query.filter_by(name='TUMBLR').one()
     CLIENT_KEY = PLATFORM.client_key
@@ -185,5 +186,7 @@ class TumblrAPI(PlatformAPI, TumblrRestClient):
                 result = self.create_photo(blogName, source=urls['photo'][0], caption=post_draft.text)
             elif 'video' in urls:
                 result = self.create_video(blogName, embed=urls['video'][0], caption=post_draft.text)
+        else:
+            result = self.create_text(blogName, body=post_draft.text)
 
         # TODO  check result
