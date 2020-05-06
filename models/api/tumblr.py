@@ -67,11 +67,12 @@ class TumblrAPI(PlatformAPI, TumblrRestClient):
         profile = self.info()
 
         profile_id = profile['user']['name']
+        name = profile['user']['blogs'][0]['title']
         profile_picture = profile['user']['blogs'][0]['avatar'][0]['url']
         followers = profile['user']['blogs'][0]['followers']
         bio = profile['user']['blogs'][0]['description']
 
-        return Profile(profile, profile_id, followers, bio=bio, profile_picture=profile_picture).as_dict()
+        return Profile(profile, profile_id, followers, name=name, bio=bio, profile_picture=profile_picture).as_dict()
 
     def get_post(self, post_id):
         return self._get_post_view(self._get_post(post_id))
