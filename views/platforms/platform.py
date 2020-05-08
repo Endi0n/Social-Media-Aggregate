@@ -50,11 +50,11 @@ class PlatformView:
 
     @staticmethod
     def get_followers_stats(platform_cls):
-        date_begin = datetime.fromtimestamp(request.args.get('date_begin', 0))
+        date_begin = datetime.fromtimestamp(float(request.args.get('date_begin', 0)))
 
         date_end = None
         if 'date_end' in request.args:
-            date_end = datetime.fromtimestamp(request.args['date_end'])
+            date_end = datetime.fromtimestamp(float(request.args['date_end']))
         else:
             date_end = datetime.utcnow()
 
@@ -67,11 +67,11 @@ class PlatformView:
 
     @staticmethod
     def get_general_stats(platform_cls):
-        date_begin = datetime.fromtimestamp(request.args.get('date_begin', 0))
+        date_begin = datetime.fromtimestamp(float(request.args.get('date_begin', 0)))
 
         date_end = None
         if 'date_end' in request.args:
-            date_end = datetime.fromtimestamp(request.args['date_end'])
+            date_end = datetime.fromtimestamp(float(request.args['date_end']))
         else:
             date_end = datetime.utcnow()
 
