@@ -18,7 +18,7 @@ class TumblrAPI(PlatformAPI, TumblrRestClient):
     AUTHORIZE_BASE_URL = 'https://www.tumblr.com/oauth/authorize'
     ACCESS_TOKEN_URL = 'https://www.tumblr.com/oauth/access_token'
 
-    def __init__(self, oauth_token, oauth_token_secret):
+    def __init__(self, oauth_token, oauth_token_secret, blogname):
         TumblrRestClient.__init__(
             self,
             TumblrAPI.CLIENT_KEY,
@@ -26,6 +26,9 @@ class TumblrAPI(PlatformAPI, TumblrRestClient):
             oauth_token,
             oauth_token_secret
         )
+        
+        self.blogname = self.blogname or self._get_self_blogname()
+            
 
     @staticmethod
     def generate_auth_req_token():
@@ -80,13 +83,13 @@ class TumblrAPI(PlatformAPI, TumblrRestClient):
         return self._get_post_view(self._get_post(post_id))
 
     def delete_post(self, post_id):
-        TumblrRestClient.delete_post(self, self._get_blogname(), post_id)
+        TumblrRestClient.delete_post(self, self.blogname, post_id)
 
     def get_posts(self):
         profile = self.info()
         current_week_no = date.today().isocalendar()[1]
         total_nr_of_posts = profile["user"]["blogs"][0]["posts"]
-        response = self.posts(self._get_blogname(), limit=total_nr_of_posts)
+        response = self.posts(self.blogname, limit=total_nr_of_posts)
         posts = []
         if 'posts' in response:
             for post in response['posts']:
@@ -139,17 +142,14 @@ class TumblrAPI(PlatformAPI, TumblrRestClient):
                         embeds=embeds).as_dict()
 
     def _get_post(self, post_id):
-        response = self.posts(self._get_blogname(), id=post_id, notes_info=True)
+        response = self.posts(self.blogname, id=post_id, notes_info=True)
         return response['posts'][0]
 
-    def _get_blogname(self):
+    def _get_self_blogname(self):
         username = self.info()['user']['name']
-        blogname = '{}.tumblr.com'.format(username)
-        return blogname
+        return f'{username}.tumblr.com'
 
     def post(self, post_draft):
-        blogName = self._get_blogname()
-
         if post_draft.files:
             files = dict()
             for file in post_draft.files:
@@ -166,9 +166,9 @@ class TumblrAPI(PlatformAPI, TumblrRestClient):
                 files[file_type].append(filepath)
 
             if 'image' in files:
-                result = self.create_photo(blogName, data=files['image'], caption=post_draft.text)
+                result = self.create_photo(self.blogname, data=files['image'], caption=post_draft.text)
             elif 'video' in files:
-                result = self.create_video(blogName, data=files['video'], caption=post_draft.text)
+                result = self.create_video(self.blogname, data=files['video'], caption=post_draft.text)
 
             for _type in files:
                 for filepath in files[_type]:
@@ -196,14 +196,14 @@ class TumblrAPI(PlatformAPI, TumblrRestClient):
                     files[file_type].append(filepath)
 
             if 'image' in files:
-                result = self.create_photo(blogName, data=files['image'], caption=post_draft.text)
+                result = self.create_photo(self.blogname, data=files['image'], caption=post_draft.text)
             elif 'video' in files:
-                result = self.create_video(blogName, data=files['video'], caption=post_draft.text)
+                result = self.create_video(self.blogname, data=files['video'], caption=post_draft.text)
 
             for _type in files:
                 for filepath in files[_type]:
                     os.remove(filepath)
         else:
-            result = self.create_text(blogName, body=post_draft.text)
+            result = self.create_text(self.blogname, body=post_draft.text)
 
         # TODO  check result

@@ -78,7 +78,8 @@ def tumblr_required(func):
         if not current_user.tumblr_token:
             return jsonify(error='Unauthenticated for Tumblr.'), 401
 
-        tumblr_client = TumblrAPI(current_user.tumblr_token.token, current_user.tumblr_token.token_secret)
+        tumblr_client = TumblrAPI(current_user.tumblr_token.token, current_user.tumblr_token.token_secret,
+                                  blogname=request.args.get('page', None))
         return func(tumblr_client, *args, **kwargs)
 
     return decorator
