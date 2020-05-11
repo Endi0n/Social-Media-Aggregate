@@ -158,3 +158,19 @@ class Stats(db.Model):
             'shares_avg': self.shares_avg,
             'shares_sum': self.shares_sum
         }
+
+
+class DefaultPage(db.Model):
+    __tablename__ = 'default_pages'
+
+    id = db.Column(db.Integer, nullable=False, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    platform_id = db.Column(db.Integer, db.ForeignKey('platform.id'), nullable=False)
+    page_id = db.Column(db.String(100), nullable=False)
+
+    __table_args__ = (Index('ix_default_pages_user_id_platform_id', 'user_id', 'platform_id'),)
+
+    def __init__(self, user_id, platform_id, page_id):
+        self.user_id = user_id
+        self.platform_id = platform_id
+        self.page_id = page_id
