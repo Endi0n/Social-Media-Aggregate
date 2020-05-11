@@ -156,7 +156,7 @@ class TumblrAPI(PlatformAPI, TumblrRestClient):
                 file_type = file.headers['Content-Type'].split('/')[0]
                 if file_type not in files:
                     files[file_type] = []
-                temp_dir = '/tmp'
+                temp_dir = os.getenv('TMP_FOLDER')
                 temp_name = "{}_{}".format(str(uuid.uuid1()), file.filename)
                 filepath = os.path.join(temp_dir, temp_name)
                 file.save(filepath)
@@ -186,7 +186,7 @@ class TumblrAPI(PlatformAPI, TumblrRestClient):
                     if file_type not in files:
                         files[file_type] = []
 
-                    temp_dir = '/tmp'
+                    temp_dir = os.getenv('TMP_FOLDER')
                     temp_name = str(uuid.uuid1())
                     filepath = os.path.join(temp_dir, temp_name)
                     g = open(filepath, 'wb')

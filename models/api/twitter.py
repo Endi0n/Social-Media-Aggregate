@@ -8,6 +8,8 @@ from bs4 import BeautifulSoup
 import requests
 import re
 import twitter
+import os
+from uuid import uuid1
 
 
 class TwitterAPI(PlatformAPI, twitter.Api):
@@ -100,7 +102,14 @@ class TwitterAPI(PlatformAPI, twitter.Api):
         for file in post_draft.files:
             file.mode = 'rb'
 
-        self.PostUpdate(status=post_draft.text, media=(post_draft.files + post_draft.files_url))
+        if len(post_draft.files) == 1 and post_draft.files[0].content_type in ('video/mp4', 'video/quicktime'):
+            file_path = os.path.join(os.getenv('TMP_FOLDER'),
+                                     f"{str(uuid1())}_{post_draft.files[0].filename}")
+            post_draft.files[0].save(file_path)
+            self.PostUpdate(status=post_draft.text, media=[file_path] + post_draft.files_url)
+            os.remove(file_path)
+        else:
+            self.PostUpdate(status=post_draft.text, media=(post_draft.files + post_draft.files_url))
 
     @staticmethod
     def _get_post_view(post):
