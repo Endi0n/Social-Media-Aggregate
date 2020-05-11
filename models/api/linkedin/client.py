@@ -42,6 +42,7 @@ class LinkedInAPI(PlatformAPI):
     def get_profile(self):
         profile = self._get_profile()
         followers = self._get_followers()
+        companies = [company['organizationalTarget'] for company in self._get_companies()['elements']]
 
         post_id = profile['id']
         followers = followers['firstDegreeSize']
@@ -55,7 +56,8 @@ class LinkedInAPI(PlatformAPI):
 
         profile.update({'followers': followers})
 
-        return Profile(profile, post_id, followers, name=name, bio=bio, profile_picture=profile_picture).as_dict()
+        return Profile(profile, post_id, followers, name=name, bio=bio, profile_picture=profile_picture,
+                       pages=companies).as_dict()
 
     def get_post(self, post_id):
         post = self._get_post(post_id)
@@ -124,7 +126,7 @@ class LinkedInAPI(PlatformAPI):
             ).content.decode())
 
     def _get_companies(self):
-        companies =  json.loads(
+        companies = json.loads(
             self._client.get(
                 'https://api.linkedin.com/v2/organizationalEntityAcls?q=roleAssignee&role=ADMINISTRATOR'
             ).content.decode())
