@@ -35,8 +35,9 @@ class LinkedInAPI(PlatformAPI):
                                     include_client_id=True,
                                     authorization_response=url)
 
-    def __init__(self, token):
+    def __init__(self, token, company):
         self._client = OAuth2Session(LinkedInAPI.CLIENT_KEY, token={'access_token': token})
+        self._company = company or self._get_default_organization_urn()
 
     def get_profile(self):
         profile = self._get_profile()
@@ -80,7 +81,7 @@ class LinkedInAPI(PlatformAPI):
         files.extend([self._upload_file(file_raw=file) for file in files_from_url])
 
         request_json = {
-            'author': self._get_organization_urn(),
+            'author': self._company,
             'lifecycleState': 'PUBLISHED',
 
             'specificContent': {
@@ -116,29 +117,28 @@ class LinkedInAPI(PlatformAPI):
         ).content.decode())
 
     def _get_followers(self):
-        companies = self._get_companies()['elements']
-        if len(companies) < 1:
-            raise LinkedInError(404, 'User has no company.')
-
-        organization_urn = companies[0]['organizationalTarget']
+        organization_urn = self._company
         return json.loads(
             self._client.get(
                 f'https://api.linkedin.com/v2/networkSizes/{organization_urn}?edgeType=CompanyFollowedByMember'
             ).content.decode())
 
     def _get_companies(self):
-        return json.loads(
+        companies =  json.loads(
             self._client.get(
                 'https://api.linkedin.com/v2/organizationalEntityAcls?q=roleAssignee&role=ADMINISTRATOR'
             ).content.decode())
+        if len(companies['elements']) < 1:
+            raise LinkedInError(404, 'User has no company.')
+        return companies
 
-    def _get_organization_urn(self):
+    def _get_default_organization_urn(self):
         return self._get_companies()['elements'][0]['organizationalTarget']
 
     def _get_self_posts(self, start, count):
         # TODO:
         return json.loads(self._client.get(
-            f'https://api.linkedin.com/v2/shares?q=owners&owners={self._get_organization_urn()}&sharesPerOwner=1000'
+            f'https://api.linkedin.com/v2/shares?q=owners&owners={self._company}&sharesPerOwner=1000'
             f'&start={start}&count={count}'
         ).content.decode())
 
@@ -196,7 +196,7 @@ class LinkedInAPI(PlatformAPI):
             f'https://api.linkedin.com/v2/assets?action=registerUpload',
             json={
                 "registerUploadRequest": {
-                    "owner": self._get_organization_urn(),
+                    "owner": self._company,
                     "recipes": [
                         "urn:li:digitalmediaRecipe:feedshare-image"
                     ],

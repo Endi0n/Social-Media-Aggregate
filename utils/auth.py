@@ -52,7 +52,7 @@ def linkedin_required(func):
         if not current_user.linkedin_token:
             return jsonify(error='Unauthenticated for LinkedIn.'), 401
 
-        linkedin_client = LinkedInAPI(current_user.linkedin_token.token)
+        linkedin_client = LinkedInAPI(current_user.linkedin_token.token, company=request.args.get('page', None))
         return func(linkedin_client, *args, **kwargs)
 
     return decorator
