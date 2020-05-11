@@ -3,7 +3,7 @@ from flask import jsonify, request, session, redirect
 from flask_login import current_user
 from app import login_manager
 from models.api import *
-from models.database import User
+from models.database import User, DefaultPage
 
 
 @login_manager.user_loader
@@ -52,7 +52,12 @@ def linkedin_required(func):
         if not current_user.linkedin_token:
             return jsonify(error='Unauthenticated for LinkedIn.'), 401
 
-        linkedin_client = LinkedInAPI(current_user.linkedin_token.token, company=request.args.get('page', None))
+        company = request.args.get('page', None)
+        if not company:
+            default_page = DefaultPage.query.filter_by(user_id=current_user.id).first()
+            company = default_page.page_id if default_page else None
+
+        linkedin_client = LinkedInAPI(current_user.linkedin_token.token, company=company)
         return func(linkedin_client, *args, **kwargs)
 
     return decorator

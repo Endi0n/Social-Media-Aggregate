@@ -42,7 +42,7 @@ class LinkedInAPI(PlatformAPI):
     def get_profile(self):
         profile = self._get_profile()
         followers = self._get_followers()
-        companies = [company['organizationalTarget'] for company in self._get_companies()['elements']]
+        companies = self.get_companies_id()
 
         post_id = profile['id']
         followers = followers['firstDegreeSize']
@@ -58,6 +58,9 @@ class LinkedInAPI(PlatformAPI):
 
         return Profile(profile, post_id, followers, name=name, bio=bio, profile_picture=profile_picture,
                        pages=companies).as_dict()
+
+    def get_companies_id(self):
+        return [company['organizationalTarget'] for company in self._get_companies()['elements']]
 
     def get_post(self, post_id):
         post = self._get_post(post_id)
@@ -141,7 +144,7 @@ class LinkedInAPI(PlatformAPI):
         return companies
 
     def _get_default_organization_urn(self):
-        return self._get_companies()['elements'][0]['organizationalTarget']
+        return self._get_companies()['elements'][-1]['organizationalTarget']
 
     def _get_self_posts(self, start, count):
         # TODO:

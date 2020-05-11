@@ -34,6 +34,7 @@ def create_std_platform(platform_name, platform_cls, platform_auth_validator):
 
 linkedin = create_std_platform('linkedin', LinkedInView, auth.linkedin_required)
 add_route(linkedin, '/token', auth.verified_user_required(LinkedInView.get_token_exp))
+add_route(linkedin, '/default_page', auth.linkedin_required(LinkedInView.default_page), methods=['GET', 'POST', 'PUT'])
 app.register_blueprint(linkedin)
 
 tumblr = create_std_platform('tumblr', TumblrView, auth.tumblr_required)
