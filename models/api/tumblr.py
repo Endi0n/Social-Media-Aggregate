@@ -6,6 +6,7 @@ from pytumblr import TumblrRestClient
 import uuid
 import os
 from datetime import datetime, date
+import requests
 
 
 class TumblrAPI(PlatformAPI, TumblrRestClient):
@@ -176,11 +177,20 @@ class TumblrAPI(PlatformAPI, TumblrRestClient):
         elif post_draft.files_url:
             urls = dict()
             for url in post_draft.files_url:
-                file_type = 'photo'  # TODO  get file type from url
 
-                if file_type not in urls:
-                    urls[file_type] = []
-                urls[file_type].append(url)
+                r = requests.head(url)
+
+                if r.ok:
+                    file_type = r.headers['Content-Type'].split('/')[0]
+
+                    if file_type == 'text':
+                        if 'youtube' in url:
+                            file_type = 'video'
+                        elif 'vimeo' in url:
+                            file_type = 'video'
+                    if file_type not in urls:
+                        urls[file_type] = []
+                    urls[file_type].append(url)
 
             if 'photo' in urls:
                 result = self.create_photo(blogName, source=urls['photo'][0], caption=post_draft.text)
