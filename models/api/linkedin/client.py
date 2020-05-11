@@ -69,12 +69,18 @@ class LinkedInAPI(PlatformAPI):
 
         current_week_no = date.today().isocalendar()[1]
         i = 0
-        while True:
+        posts_exist = True
+
+        while posts_exist:
+            posts_exist = False
             for post in self._get_self_posts(0 + i, 20 + i)['elements']:
                 if datetime.fromtimestamp(post['created']['time'] // 1e3).isocalendar()[1] != current_week_no:
-                    return {'posts': list(posts.values())}
+                    break
                 posts[post['id']] = self._get_post_view(post, self._get_post_stats(post['id']))
-                i += 1
+                posts_exist = True
+            i += 1
+
+        return {'posts': list(posts.values())}
 
     def post(self, post_draft):
         files = [self._upload_file(file) for file in post_draft.files]
