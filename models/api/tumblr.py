@@ -175,7 +175,7 @@ class TumblrAPI(PlatformAPI, TumblrRestClient):
                     os.remove(filepath)
 
         elif post_draft.files_url:
-            urls = dict()
+            files = dict()
             for url in post_draft.files_url:
 
                 r = requests.head(url)
@@ -183,19 +183,26 @@ class TumblrAPI(PlatformAPI, TumblrRestClient):
                 if r.ok:
                     file_type = r.headers['Content-Type'].split('/')[0]
 
-                    if file_type == 'text':
-                        if 'youtube' in url:
-                            file_type = 'video'
-                        elif 'vimeo' in url:
-                            file_type = 'video'
-                    if file_type not in urls:
-                        urls[file_type] = []
-                    urls[file_type].append(url)
+                    if file_type not in files:
+                        files[file_type] = []
 
-            if 'photo' in urls:
-                result = self.create_photo(blogName, source=urls['photo'][0], caption=post_draft.text)
-            elif 'video' in urls:
-                result = self.create_video(blogName, embed=urls['video'][0], caption=post_draft.text)
+                    temp_dir = '/tmp'
+                    temp_name = str(uuid.uuid1())
+                    filepath = os.path.join(temp_dir, temp_name)
+                    g = open(filepath, 'wb')
+                    g.write(requests.get(url).content)
+                    g.close()
+
+                    files[file_type].append(filepath)
+
+            if 'image' in files:
+                result = self.create_photo(blogName, data=files['image'], caption=post_draft.text)
+            elif 'video' in files:
+                result = self.create_video(blogName, data=files['video'], caption=post_draft.text)
+
+            for _type in files:
+                for filepath in files[_type]:
+                    os.remove(filepath)
         else:
             result = self.create_text(blogName, body=post_draft.text)
 
