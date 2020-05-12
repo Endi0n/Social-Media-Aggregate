@@ -146,8 +146,12 @@ class TumblrAPI(PlatformAPI, TumblrRestClient):
         return response['posts'][0]
 
     def _get_self_blogname(self):
-        username = self.info()['user']['name']
-        return f'{username}.tumblr.com'
+        blogNames = []
+        var = self.info()
+        for blog in var['user']['blogs']:
+            blogname = blog['name'] #so i avoid the fstring conflict
+            blogNames.append(f'{blogname}.tumblr.com')
+        return blogNames
 
     def post(self, post_draft):
         if post_draft.files:
