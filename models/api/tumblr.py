@@ -26,9 +26,8 @@ class TumblrAPI(PlatformAPI, TumblrRestClient):
             oauth_token,
             oauth_token_secret
         )
-        
-        self.blogname = self.blogname or self._get_self_blogname()
-            
+
+        self.blogname = blogname or f"{self.info()['user']['name']}.tumblr.com"
 
     @staticmethod
     def generate_auth_req_token():
@@ -77,7 +76,8 @@ class TumblrAPI(PlatformAPI, TumblrRestClient):
         followers = profile['user']['blogs'][0]['followers']
         bio = profile['user']['blogs'][0]['description']
 
-        return Profile(profile, profile_id, followers, name=name, bio=bio, profile_picture=profile_picture).as_dict()
+        return Profile(profile, profile_id, followers, name=name, bio=bio, profile_picture=profile_picture,
+                       pages=self.get_blognames()).as_dict()
 
     def get_post(self, post_id):
         return self._get_post_view(self._get_post(post_id))
@@ -145,11 +145,11 @@ class TumblrAPI(PlatformAPI, TumblrRestClient):
         response = self.posts(self.blogname, id=post_id, notes_info=True)
         return response['posts'][0]
 
-    def _get_self_blogname(self):
+    def get_blognames(self):
         blogNames = []
         var = self.info()
         for blog in var['user']['blogs']:
-            blogname = blog['name'] #so i avoid the fstring conflict
+            blogname = blog['name']  # so i avoid the fstring conflict
             blogNames.append(f'{blogname}.tumblr.com')
         return blogNames
 
