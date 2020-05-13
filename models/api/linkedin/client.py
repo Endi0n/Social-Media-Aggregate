@@ -43,6 +43,7 @@ class LinkedInAPI(PlatformAPI):
         profile = self._get_profile()
         followers = self._get_followers()
         companies = self.get_companies_id()
+        companies_names = {company: self.get_company_name(company) for company in companies}
 
         post_id = profile['id']
         followers = followers['firstDegreeSize']
@@ -57,10 +58,15 @@ class LinkedInAPI(PlatformAPI):
         profile.update({'followers': followers})
 
         return Profile(profile, post_id, followers, name=name, bio=bio, profile_picture=profile_picture,
-                       pages=companies).as_dict()
+                       pages=companies, pages_names=companies_names).as_dict()
 
     def get_companies_id(self):
         return [company['organizationalTarget'] for company in self._get_companies()['elements']]
+
+    def get_company_name(self, company_id):
+        company_id = company_id.split(':')[-1]
+        company = json.loads(self._client.get('https://api.linkedin.com/v2/organizations/' + company_id).content.decode())
+        return company['localizedName']
 
     def get_post(self, post_id):
         post = self._get_post(post_id)
