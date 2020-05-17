@@ -4,6 +4,7 @@ from models.database import FollowersCount, Stats
 import utils.auth as auth
 from app import db
 from datetime import datetime
+from statistics import mean
 
 
 class PlatformView:
@@ -42,11 +43,37 @@ class PlatformView:
 
     @staticmethod
     def posts_stats(client):
-        return jsonify(client.posts_stats())
+        if 'date_begin' not in request.args:
+            return jsonify(client.posts_stats())
+
+        date_begin = datetime.fromtimestamp(float(request.args.get('date_begin', 0)))
+
+        date_end = None
+        if 'date_end' in request.args:
+            date_end = datetime.fromtimestamp(float(request.args['date_end']))
+        else:
+            date_end = datetime.utcnow()
+
+        entries = Stats.query.filter_by(
+            user_id=auth.get_authenticated_user().id,
+            platform_id=client.PLATFORM.id
+        ).filter(Stats.timestamp.between(date_begin, date_end)).order_by(Stats.timestamp.desc()).all()
+
+        stats = {
+            'likes_sum': sum(entry.likes_sum for entry in entries),
+            'shares_sum': sum(entry.shares_sum for entry in entries),
+            'comments_sum': sum(entry.comments_sum for entry in entries),
+
+            'likes_avg': mean((entry.likes_sum for entry in entries) or [0]),
+            'shares_avg': mean((entry.likes_sum for entry in entries) or [0]),
+            'comments_avg': mean((entry.likes_sum for entry in entries) or [0])
+        }
+
+        return jsonify(stats)
 
     @staticmethod
     def get_posts_ranked(client):
-        return jsonify(client.get_posts_ranked())
+        return jsonify(client.get_posts_ranked(request.args.get('by', 'likes')))
 
     @staticmethod
     def get_followers_stats(platform_cls):
